@@ -663,7 +663,7 @@ H_Line2.BackgroundColor3 = Config.Colors.ToscaGreen
 H_Line3.BackgroundColor3 = Config.Colors.ToscaGreen
 
 -- ==============================================================================
--- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 1 - MUSIC PANEL ELEGANT)
+-- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 1 - MUSIC PANEL ELEGANT FIXED)
 -- ==============================================================================
 
 local MusicPage = Page_Music.Page
@@ -839,11 +839,13 @@ ControlPanel.BackgroundTransparency = 0.5
 ControlPanel.ZIndex = 2
 Instance.new("UICorner", ControlPanel).CornerRadius = UDim.new(0, 12)
 
+-- FIX: Mengganti SpaceEvenly menjadi Center dan menambahkan Padding
 local CtrlLayout = Instance.new("UIListLayout", ControlPanel)
 CtrlLayout.FillDirection = Enum.FillDirection.Horizontal
-CtrlLayout.HorizontalAlignment = Enum.HorizontalAlignment.SpaceEvenly
+CtrlLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center 
 CtrlLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 CtrlLayout.SortOrder = Enum.SortOrder.LayoutOrder
+CtrlLayout.Padding = UDim.new(0, 10) 
 
 local function CreateCtrlBtn(name, text, size, txtSize, order, isMain)
     local btn = Instance.new("TextButton", ControlPanel)
@@ -871,6 +873,7 @@ local function CreateCtrlBtn(name, text, size, txtSize, order, isMain)
     return btn
 end
 
+-- Posisi dan urutan diubah sesuai request
 local BtnQueue    = CreateCtrlBtn("BtnQueue", "≡", 35, 16, 1, false)
 local BtnTempo    = CreateCtrlBtn("BtnTempo", "⏱", 35, 14, 2, false)
 local BtnPrev     = CreateCtrlBtn("BtnPrev", "⏮", 40, 16, 3, false)
@@ -881,7 +884,7 @@ local BtnPlayMode = CreateCtrlBtn("BtnPlayMode", "🔁", 35, 14, 6, false)
 -- ================= SUB PART: FLOATING TEMPO PANEL =================
 local TempoContainer = Instance.new("Frame", MusicPage)
 TempoContainer.Size = UDim2.new(0, 200, 0, 45)
-TempoContainer.Position = UDim2.new(0.5, -100, 0, 110) -- Muncul elegan di atas tombol
+TempoContainer.Position = UDim2.new(0.5, -100, 0, 110) -- Melayang (floating) elegan
 TempoContainer.BackgroundColor3 = Config.Colors.DarkBlue
 TempoContainer.BackgroundTransparency = 0.1
 TempoContainer.ClipsDescendants = true
@@ -890,10 +893,12 @@ TempoContainer.ZIndex = 10
 Instance.new("UICorner", TempoContainer).CornerRadius = UDim.new(0, 10)
 Instance.new("UIStroke", TempoContainer).Color = Config.Colors.ToscaGreen
 
+-- FIX: Mengganti SpaceEvenly menjadi Center dan menambahkan Padding
 local TmpLayout = Instance.new("UIListLayout", TempoContainer)
 TmpLayout.FillDirection = Enum.FillDirection.Horizontal
-TmpLayout.HorizontalAlignment = Enum.HorizontalAlignment.SpaceEvenly
+TmpLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
 TmpLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+TmpLayout.Padding = UDim.new(0, 8)
 
 local TmpBtns = {}
 for _, spd in ipairs({0.5, 1.0, 1.5, 2.0}) do
@@ -957,12 +962,12 @@ QLayout.SortOrder = Enum.SortOrder.LayoutOrder
 QLayout.Padding = UDim.new(0, 6)
 
 BtnQueue.MouseButton1Click:Connect(function()
-    if QueueContainer.Size.Y.Offset > 0 then
+    if QueueContainer.Size.Y.Offset > 0 or QueueContainer.Size.Y.Scale > 0 then
         TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 0)}):Play()
         QStroke.Transparency = 1
     else
         QStroke.Transparency = 0
-        -- Sisa area layar bawah dikalkulasi otomatis
+        -- Meluas ke sisa ruangan bawah
         TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, -240)}):Play()
     end
 end)
@@ -1062,20 +1067,21 @@ end)
 
 BtnPrev.MouseButton1Click:Connect(function() App.PlayTrack(App.CurrentTrackIndex - 1) end)
 
+-- LOGIKA MODE PUTAR BERGANTI
 BtnPlayMode.MouseButton1Click:Connect(function()
     App.PlayMode = App.PlayMode + 1
     if App.PlayMode > 3 then App.PlayMode = 1 end
     
     if App.PlayMode == 1 then
-        BtnPlayMode.Text = "🔁" -- Auto Next
+        BtnPlayMode.Text = "🔁" -- Auto Next (Putar Otomatis Biasa)
         BtnPlayMode.TextColor3 = Config.Colors.White
         App.Notify("Mode Putar", "Putar Otomatis", 2)
     elseif App.PlayMode == 2 then
-        BtnPlayMode.Text = "🔂" -- Repeat One
+        BtnPlayMode.Text = "🔂" -- Repeat One (Ulangi Sekali)
         BtnPlayMode.TextColor3 = Config.Colors.ToscaGreen
-        App.Notify("Mode Putar", "Ulangi Sekali", 2)
+        App.Notify("Mode Putar", "Ulangi Lagu Ini", 2)
     elseif App.PlayMode == 3 then
-        BtnPlayMode.Text = "🔀" -- Shuffle
+        BtnPlayMode.Text = "🔀" -- Shuffle (Putar Acak)
         BtnPlayMode.TextColor3 = Config.Colors.ToscaGreen
         App.Notify("Mode Putar", "Putar Acak", 2)
     end
