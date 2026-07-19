@@ -749,1360 +749,665 @@ end)
 
 if not success_b2 then warn("[Axomusc] Error Bagian 2 (3-Layar System): " .. tostring(error_b2)) end
 
+        Gray = Color3.fromRGB(60, 60, 70),
+        return a + (b - a) * t
+    -- [4] UI FACTORY GENERATORS (FOR MODULARITY & LENGTH)
+        return frame
+        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+        label.Text = text
+        local img = Instance.new("ImageLabel")
+    end
+    local AudioEngine = Instance.new("Sound")
+    _G.Axomusc_State = {
+    -- ==============================================================================
+
+        2
+        0,
+        ColorSequenceKeypoint.new(1.00, Colors.ToscaGreen)
+        3
+            "Vinyl_Ring_" .. i,
+
+    -- [7.4] Center Hole & Spindle
+    local SpindleHole = UI.CreateFrame(
+
+
+    _G.Axomusc_TitleLabel = TitleLabel
+    _G.Axomusc_ArtistLabel = ArtistLabel
+    )
+        Enum.TextXAlignment.Right,
+        12,
+    ProgressHitbox.ZIndex = 5
+        2
+        UDim2.new(1, 0, 0.5, 0),
+    -- ==============================================================================
+    )
+    })
+    ControlLayout.Parent = ControlPanel
+            pcall(function() CreateTween(btn, 0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, {TextSize = hoverSize, TextColor3 = Colors.IceBlue}) end)
+    local BtnNext  = CreateControlButton("Btn_Next", "⏭", 4, 24, 28, Colors.White)
+        pcall(function()
+        spdBtn.TextSize = 13
+        pcall(function()
+            local mouseX = input.Position.X
+        end)
+        end)
+            if _G.Axomusc_State.IsDraggingProgress then UpdateProgressVisual(input) end
+                    end
+            ProgressFill.Size = UDim2.new(0, 0, 1, 0)
+                AudioEngine:Pause()
+    BtnPlay.MouseButton1Click:Connect(_G.Axomusc_TogglePlayback)
+            local isPlaying = AudioEngine.IsPlaying
+                
+                        ProgressFill.Size = UDim2.new(nextScale, 0, 1, 0)
+                        BtnPlay.TextColor3 = Colors.White
+end)
+
 -- ==============================================================================
 -- [ AXOLION COMMUNITY (BETA) - UI SCRIPT ]
--- REVISI TOTAL: BAGIAN 3 - TAHAP 1 (ULTRA-PREMIUM EDITION)
--- ==============================================================================
--- MENUNGGU PERINTAH "LANJUT" UNTUK TAHAP 2 (PLAYLIST & FOLDER)
+-- BAGIAN 3 - TAHAP 1 (FIXED CD POSITION & PREMIUM SYSTEM)
 -- ==============================================================================
 
-local Tahap1_Success, Tahap1_Error = pcall(function()
+local _, EngineError = pcall(function()
     
     -- ==============================================================================
-    -- [1] SERVICES INITIALIZATION
+    -- 1. SERVICES & GLOBAL VARIABLES INITIALIZATION
     -- ==============================================================================
-    local CoreGui = game:GetService("CoreGui")
     local TweenService = game:GetService("TweenService")
     local RunService = game:GetService("RunService")
     local UserInputService = game:GetService("UserInputService")
-    local SoundService = game:GetService("SoundService")
-    local ContentProvider = game:GetService("ContentProvider")
-    local Workspace = game:GetService("Workspace")
-    local Players = game:GetService("Players")
-
-    -- ==============================================================================
-    -- [2] GLOBAL CONFIGURATION & THEME SYSTEM
-    -- ==============================================================================
-    _G.Axomusc_Config = _G.Axomusc_Config or {}
+    local CoreGui = game:GetService("CoreGui")
     
-    -- Strict Premium Color Palette Definition
+    _G.Axomusc_Config = _G.Axomusc_Config or {}
     _G.Axomusc_Config.Colors = _G.Axomusc_Config.Colors or {
         DarkBlue = Color3.fromRGB(15, 25, 45),
         ToscaGreen = Color3.fromRGB(0, 200, 150),
         Black = Color3.fromRGB(10, 10, 15),
         White = Color3.fromRGB(245, 245, 245),
-        IceBlue = Color3.fromRGB(100, 200, 255),
-        Gray = Color3.fromRGB(60, 60, 70),
-        DarkGray = Color3.fromRGB(30, 30, 40),
-        Transparent = Color3.fromRGB(255, 255, 255) -- Used with Transparency 1
+        IceBlue = Color3.fromRGB(100, 200, 255)
     }
+    _G.Axomusc_Config.Thumbnail = _G.Axomusc_Config.Thumbnail or "rbxassetid://84404991858137"
     
     local Colors = _G.Axomusc_Config.Colors
-    
-    -- Asset IDs
-    _G.Axomusc_Config.MainLogo = "rbxassetid://85647271976925"
-    _G.Axomusc_Config.Thumbnail = "rbxassetid://84404991858137"
-    _G.Axomusc_Config.SubLogo = "rbxassetid://100003155958609"
-    _G.Axomusc_Config.GlowAsset = "rbxassetid://5028857084"
-
-    -- Ensure Base Page Exists
     _G.Page_Music = _G.Page_Music or { Page = Instance.new("Frame") }
     local PageMusic = _G.Page_Music.Page
 
     -- ==============================================================================
-    -- [3] ADVANCED MATH & UTILITY FUNCTIONS
+    -- 2. UTILITY FUNCTIONS
     -- ==============================================================================
-    local MathUtils = {}
-    
-    function MathUtils.Lerp(a, b, t)
-        return a + (b - a) * t
-    end
-
-    function MathUtils.Clamp(val, min, max)
-        if val < min then return min end
-        if val > max then return max end
-        return val
-    end
-
-    function MathUtils.FormatTime(seconds)
-        if not seconds or seconds ~= seconds or seconds < 0 or seconds == math.huge then 
-            return "00:00" 
-        end
+    local function FormatTime(seconds)
+        if not seconds or seconds ~= seconds or seconds < 0 then return "00:00" end
         local mins = math.floor(seconds / 60)
         local secs = math.floor(seconds % 60)
         return string.format("%02d:%02d", mins, secs)
     end
 
-    local function CreateTween(object, time, style, direction, properties)
-        local success, tween = pcall(function()
-            local tweenInfo = TweenInfo.new(time, style, direction)
-            local t = TweenService:Create(object, tweenInfo, properties)
-            t:Play()
-            return t
-        end)
-        if success then return tween else return nil end
+    local function CreateGlow(parent, color, size, transparency)
+        local glow = Instance.new("ImageLabel")
+        glow.Name = "GlowEffect"
+        glow.BackgroundTransparency = 1
+        glow.Image = "rbxassetid://5028857084"
+        glow.ImageColor3 = color
+        glow.ImageTransparency = transparency
+        glow.Size = size
+        glow.Position = UDim2.new(0.5, 0, 0.5, 0)
+        glow.AnchorPoint = Vector2.new(0.5, 0.5)
+        glow.ZIndex = parent.ZIndex - 1
+        glow.Parent = parent
+        return glow
+    end
+
+    local function SmoothTween(obj, props, time, style, dir)
+        time = time or 0.3
+        style = style or Enum.EasingStyle.Quart
+        dir = dir or Enum.EasingDirection.Out
+        local tween = TweenService:Create(obj, TweenInfo.new(time, style, dir), props)
+        tween:Play()
+        return tween
     end
 
     -- ==============================================================================
-    -- [4] UI FACTORY GENERATORS (FOR MODULARITY & LENGTH)
+    -- 3. CORE AUDIO ENGINE SETUP
     -- ==============================================================================
-    local UI = {}
-
-    function UI.CreateFrame(name, parent, size, pos, anchor, bgColor, transparency, zIndex)
-        local frame = Instance.new("Frame")
-        frame.Name = name
-        frame.Size = size
-        frame.Position = pos
-        frame.AnchorPoint = anchor or Vector2.new(0, 0)
-        frame.BackgroundColor3 = bgColor or Colors.Black
-        frame.BackgroundTransparency = transparency or 0
-        frame.BorderSizePixel = 0
-        frame.ZIndex = zIndex or 1
-        frame.Parent = parent
-        return frame
-    end
-
-    function UI.CreateCorner(parent, radius)
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(radius.Scale, radius.Offset)
-        corner.Parent = parent
-        return corner
-    end
-
-    function UI.CreateStroke(parent, color, thickness, transparency)
-        local stroke = Instance.new("UIStroke")
-        stroke.Color = color or Colors.White
-        stroke.Thickness = thickness or 1
-        stroke.Transparency = transparency or 0
-        stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-        stroke.Parent = parent
-        return stroke
-    end
-
-    function UI.CreateTextLabel(name, parent, size, pos, anchor, text, font, textSize, textColor, alignX, zIndex)
-        local label = Instance.new("TextLabel")
-        label.Name = name
-        label.Size = size
-        label.Position = pos
-        label.AnchorPoint = anchor or Vector2.new(0, 0)
-        label.BackgroundTransparency = 1
-        label.Text = text
-        label.Font = font or Enum.Font.GothamMedium
-        label.TextSize = textSize or 14
-        label.TextColor3 = textColor or Colors.White
-        label.TextXAlignment = alignX or Enum.TextXAlignment.Center
-        label.TextYAlignment = Enum.TextYAlignment.Center
-        label.ZIndex = zIndex or 1
-        label.Parent = parent
-        return label
-    end
-
-    function UI.CreateImage(name, parent, size, pos, anchor, imageId, scaleType, zIndex)
-        local img = Instance.new("ImageLabel")
-        img.Name = name
-        img.Size = size
-        img.Position = pos
-        img.AnchorPoint = anchor or Vector2.new(0, 0)
-        img.BackgroundTransparency = 1
-        img.Image = imageId
-        img.ScaleType = scaleType or Enum.ScaleType.Stretch
-        img.ZIndex = zIndex or 1
-        img.Parent = parent
-        return img
-    end
+    pcall(function() if _G.Axomusc_AudioCore then _G.Axomusc_AudioCore:Destroy() end end)
+    
+    local AudioCore = Instance.new("Sound")
+    AudioCore.Name = "Axomusc_Engine_Premium"
+    AudioCore.Parent = CoreGui
+    AudioCore.Volume = 0.5
+    AudioCore.PlaybackSpeed = 1
+    AudioCore.Looped = false 
+    _G.Axomusc_AudioCore = AudioCore
 
     -- ==============================================================================
-    -- [5] CORE AUDIO ENGINE RE-INITIALIZATION
+    -- 4. MUSIC PANEL CONTAINER
     -- ==============================================================================
-    pcall(function()
-        if _G.Axomusc_Engine then
-            _G.Axomusc_Engine:Stop()
-            _G.Axomusc_Engine:Destroy()
+    if PageMusic:FindFirstChild("MusicContainer_Tahap1") then
+        PageMusic.MusicContainer_Tahap1:Destroy()
+    end
+
+    local MusicContainer = Instance.new("Frame")
+    MusicContainer.Name = "MusicContainer_Tahap1"
+    MusicContainer.Size = UDim2.new(1, 0, 1, 0)
+    MusicContainer.BackgroundTransparency = 1
+    MusicContainer.Parent = PageMusic
+
+    -- ==============================================================================
+    -- 5. VINYL / CD PLAYER VISUALIZER (FIXED POSITION & SCALE)
+    -- ==============================================================================
+    local DefaultCDPosition = UDim2.new(0.5, 0, 0.08, 0)
+    
+    local AlbumWrapper = Instance.new("Frame")
+    AlbumWrapper.Name = "CD_Wrapper"
+    -- MENGGUNAKAN UKURAN ABSOLUT AGAR TIDAK TERDISTORSI/TURUN SAAT PLAYLIST DIBUKA
+    AlbumWrapper.Size = UDim2.new(0, 180, 0, 180) 
+    AlbumWrapper.Position = DefaultCDPosition
+    AlbumWrapper.AnchorPoint = Vector2.new(0.5, 0)
+    AlbumWrapper.BackgroundTransparency = 1
+    AlbumWrapper.Parent = MusicContainer
+    _G.Axomusc_CDWrapper = AlbumWrapper
+
+    -- Fungsi paksa agar CD selalu kembali ke posisinya jika berubah oleh script luar
+    AlbumWrapper:GetPropertyChangedSignal("Position"):Connect(function()
+        if AlbumWrapper.Position ~= DefaultCDPosition then
+            AlbumWrapper.Position = DefaultCDPosition
         end
     end)
-    
-    local AudioEngine = Instance.new("Sound")
-    AudioEngine.Name = "Axolion_Audio_Engine_V2"
-    AudioEngine.Parent = CoreGui
-    AudioEngine.Volume = 0.5
-    AudioEngine.PlaybackSpeed = 1
-    AudioEngine.Looped = false
-    AudioEngine.SoundGroup = nil
-    AudioEngine.PlayOnRemove = false
-    _G.Axomusc_Engine = AudioEngine
 
-    -- State Variables
-    _G.Axomusc_State = {
-        IsPlaying = false,
-        CurrentID = "",
-        CurrentTitle = "",
-        CurrentArtist = "",
-        Duration = 0,
-        Position = 0,
-        Volume = 0.5,
-        Speed = 1.0,
-        IsDraggingProgress = false,
-        IsDraggingVolume = false,
-        BassPulseTarget = 1,
-        BassPulseCurrent = 1,
-        VinylRotation = 0
-    }
+    local AspectRatio = Instance.new("UIAspectRatioConstraint")
+    AspectRatio.AspectRatio = 1
+    AspectRatio.AspectType = Enum.AspectType.FitWithinMaxSize
+    AspectRatio.DominantAxis = Enum.DominantAxis.Width
+    AspectRatio.Parent = AlbumWrapper
 
-    -- ==============================================================================
-    -- [6] MASTER CONTAINER SETUP
-    -- ==============================================================================
-    local MusicContainer = UI.CreateFrame(
-        "Music_Master_Container", 
-        PageMusic, 
-        UDim2.new(1, 0, 1, 0), 
-        UDim2.new(0, 0, 0, 0), 
-        Vector2.new(0, 0), 
-        Colors.Black, 
-        1, 
-        1
-    )
-
-    -- ==============================================================================
-    -- [7] EXTREME DETAIL VINYL & CD VISUALIZER
-    -- ==============================================================================
-    local VisualizerWrapper = UI.CreateFrame(
-        "Visualizer_Wrapper",
-        MusicContainer,
-        UDim2.new(0.5, 0, 0.5, 0),
-        UDim2.new(0.5, 0, 0.05, 0),
-        Vector2.new(0.5, 0),
-        Colors.Black,
-        1,
-        2
-    )
-
-    local AspectRatioConstraint = Instance.new("UIAspectRatioConstraint")
-    AspectRatioConstraint.AspectRatio = 1
-    AspectRatioConstraint.AspectType = Enum.AspectType.FitWithinMaxSize
-    AspectRatioConstraint.DominantAxis = Enum.DominantAxis.Height
-    AspectRatioConstraint.Parent = VisualizerWrapper
-
-    -- [7.1] Responsive RGB Bass Glow
-    local BassGlow = UI.CreateFrame(
-        "Bass_RGB_Glow",
-        VisualizerWrapper,
-        UDim2.new(1, 40, 1, 40),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        Color3.new(1, 1, 1),
-        0,
-        1
-    )
-    UI.CreateCorner(BassGlow, UDim.new(1, 0))
+    local RGB_Bass = Instance.new("Frame")
+    RGB_Bass.Name = "RGB_Bass_Visualizer"
+    RGB_Bass.Size = UDim2.new(1, 20, 1, 20)
+    RGB_Bass.Position = UDim2.new(0.5, 0, 0.5, 0)
+    RGB_Bass.AnchorPoint = Vector2.new(0.5, 0.5)
+    RGB_Bass.BackgroundColor3 = Color3.new(1, 1, 1)
+    RGB_Bass.ZIndex = 1
+    RGB_Bass.Parent = AlbumWrapper
+    Instance.new("UICorner", RGB_Bass).CornerRadius = UDim.new(1, 0)
 
     local BassGradient = Instance.new("UIGradient")
-    BassGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0.00, Colors.ToscaGreen),
-        ColorSequenceKeypoint.new(0.20, Colors.IceBlue),
-        ColorSequenceKeypoint.new(0.40, Colors.DarkBlue),
-        ColorSequenceKeypoint.new(0.60, Colors.ToscaGreen),
-        ColorSequenceKeypoint.new(0.80, Colors.IceBlue),
-        ColorSequenceKeypoint.new(1.00, Colors.ToscaGreen)
-    })
-    BassGradient.Rotation = 0
-    BassGradient.Parent = BassGlow
+    BassGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Colors.ToscaGreen),
+        ColorSequenceKeypoint.new(0.25, Colors.IceBlue),
+        ColorSequenceKeypoint.new(0.5, Colors.DarkBlue),
+        ColorSequenceKeypoint.new(0.75, Colors.IceBlue),
+        ColorSequenceKeypoint.new(1, Colors.ToscaGreen)
+    }
+    BassGradient.Parent = RGB_Bass
 
-    -- [7.2] Main Vinyl Record
-    local VinylRecord = UI.CreateImage(
-        "Vinyl_Record_Main",
-        VisualizerWrapper,
-        UDim2.new(1, 0, 1, 0),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        _G.Axomusc_Config.Thumbnail,
-        Enum.ScaleType.Crop,
-        3
-    )
-    VinylRecord.BackgroundTransparency = 0
-    VinylRecord.BackgroundColor3 = Colors.Black
-    UI.CreateCorner(VinylRecord, UDim.new(1, 0))
-    UI.CreateStroke(VinylRecord, Colors.DarkBlue, 4, 0)
+    local AlbumCD = Instance.new("ImageLabel")
+    AlbumCD.Name = "Vinyl_Record"
+    AlbumCD.Size = UDim2.new(1, 0, 1, 0)
+    AlbumCD.Position = UDim2.new(0.5, 0, 0.5, 0)
+    AlbumCD.AnchorPoint = Vector2.new(0.5, 0.5)
+    AlbumCD.Image = _G.Axomusc_Config.Thumbnail
+    AlbumCD.ScaleType = Enum.ScaleType.Crop
+    AlbumCD.BackgroundColor3 = Colors.Black
+    AlbumCD.ZIndex = 2
+    AlbumCD.Parent = AlbumWrapper
+    Instance.new("UICorner", AlbumCD).CornerRadius = UDim.new(1, 0)
+    
+    local CD_Stroke = Instance.new("UIStroke")
+    CD_Stroke.Color = Colors.DarkBlue
+    CD_Stroke.Thickness = 3
+    CD_Stroke.Parent = AlbumCD
 
-    -- [7.3] Vinyl Texture Overlays (Rings & Light Reflection)
-    for i = 1, 6 do
-        local ringSize = 1 - (i * 0.12)
-        local Ring = UI.CreateFrame(
-            "Vinyl_Ring_" .. i,
-            VinylRecord,
-            UDim2.new(ringSize, 0, ringSize, 0),
-            UDim2.new(0.5, 0, 0.5, 0),
-            Vector2.new(0.5, 0.5),
-            Colors.Black,
-            1,
-            4
-        )
-        UI.CreateCorner(Ring, UDim.new(1, 0))
-        UI.CreateStroke(Ring, Colors.White, 1, 0.85 + (i * 0.02))
+    for i = 1, 4 do
+        local ring = Instance.new("Frame")
+        ring.Size = UDim2.new(1 - (i*0.1), 0, 1 - (i*0.1), 0)
+        ring.Position = UDim2.new(0.5, 0, 0.5, 0)
+        ring.AnchorPoint = Vector2.new(0.5, 0.5)
+        ring.BackgroundTransparency = 1
+        ring.ZIndex = 3
+        ring.Parent = AlbumCD
+        Instance.new("UICorner", ring).CornerRadius = UDim.new(1, 0)
+        local stroke = Instance.new("UIStroke")
+        stroke.Color = Colors.White
+        stroke.Thickness = 0.5
+        stroke.Transparency = 0.85
+        stroke.Parent = ring
     end
 
-    local ReflectionGradient = UI.CreateFrame(
-        "Vinyl_Reflection",
-        VinylRecord,
-        UDim2.new(1, 0, 1, 0),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        Color3.new(1, 1, 1),
-        0,
-        5
-    )
-    UI.CreateCorner(ReflectionGradient, UDim.new(1, 0))
-    local RefGradient = Instance.new("UIGradient")
-    RefGradient.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.new(1,1,1)),
-        ColorSequenceKeypoint.new(0.5, Color3.new(0,0,0)),
-        ColorSequenceKeypoint.new(1, Color3.new(1,1,1))
-    })
-    RefGradient.Transparency = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.8),
-        NumberSequenceKeypoint.new(0.4, 1),
-        NumberSequenceKeypoint.new(0.6, 1),
-        NumberSequenceKeypoint.new(1, 0.8)
-    })
-    RefGradient.Rotation = -45
-    RefGradient.Parent = ReflectionGradient
-
-    -- [7.4] Center Hole & Spindle
-    local CenterLabel = UI.CreateFrame(
-        "Center_Label",
-        VinylRecord,
-        UDim2.new(0.3, 0, 0.3, 0),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        Colors.DarkBlue,
-        0,
-        6
-    )
-    UI.CreateCorner(CenterLabel, UDim.new(1, 0))
-    UI.CreateStroke(CenterLabel, Colors.ToscaGreen, 2, 0)
-
-    local SpindleHole = UI.CreateFrame(
-        "Spindle_Hole",
-        CenterLabel,
-        UDim2.new(0.15, 0, 0.15, 0),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        Colors.Black,
-        0,
-        7
-    )
-    UI.CreateCorner(SpindleHole, UDim.new(1, 0))
-    UI.CreateStroke(SpindleHole, Colors.IceBlue, 1, 0.5)
+    local CD_Hole = Instance.new("Frame")
+    CD_Hole.Size = UDim2.new(0.22, 0, 0.22, 0)
+    CD_Hole.Position = UDim2.new(0.5, 0, 0.5, 0)
+    CD_Hole.AnchorPoint = Vector2.new(0.5, 0.5)
+    CD_Hole.BackgroundColor3 = Colors.Black
+    CD_Hole.ZIndex = 4
+    CD_Hole.Parent = AlbumCD
+    Instance.new("UICorner", CD_Hole).CornerRadius = UDim.new(1, 0)
     
-    _G.Axomusc_AlbumArt = VinylRecord
+    local CD_HoleStroke = Instance.new("UIStroke")
+    CD_HoleStroke.Color = Colors.ToscaGreen
+    CD_HoleStroke.Thickness = 2
+    CD_HoleStroke.Parent = CD_Hole
+
+    local CD_Spindle = Instance.new("Frame")
+    CD_Spindle.Size = UDim2.new(0.15, 0, 0.15, 0)
+    CD_Spindle.Position = UDim2.new(0.5, 0, 0.5, 0)
+    CD_Spindle.AnchorPoint = Vector2.new(0.5, 0.5)
+    CD_Spindle.BackgroundColor3 = Colors.White
+    CD_Spindle.ZIndex = 5
+    CD_Spindle.Parent = CD_Hole
+    Instance.new("UICorner", CD_Spindle).CornerRadius = UDim.new(1, 0)
+
+    _G.Axomusc_AlbumArt = AlbumCD
 
     -- ==============================================================================
-    -- [8] SONG METADATA PANEL
+    -- 6. SONG INFO & INTERACTIVE PROGRESS BAR
     -- ==============================================================================
-    local MetaDataPanel = UI.CreateFrame(
-        "MetaData_Panel",
-        MusicContainer,
-        UDim2.new(1, -40, 0, 60),
-        UDim2.new(0.5, 0, 0.58, 0),
-        Vector2.new(0.5, 0),
-        Colors.Black,
-        1,
-        2
-    )
+    local InfoContainer = Instance.new("Frame")
+    InfoContainer.Name = "Song_Information"
+    InfoContainer.Size = UDim2.new(1, -30, 0, 80)
+    -- POSISI DITETAPKAN SECARA ABSOLUT RELATIF DARI ATAS AGAR TIDAK TURUN
+    InfoContainer.Position = UDim2.new(0.5, 0, 0, 210) 
+    InfoContainer.AnchorPoint = Vector2.new(0.5, 0)
+    InfoContainer.BackgroundTransparency = 1
+    InfoContainer.Parent = MusicContainer
 
-    local TitleLabel = UI.CreateTextLabel(
-        "Title_Label",
-        MetaDataPanel,
-        UDim2.new(1, 0, 0, 30),
-        UDim2.new(0.5, 0, 0, 0),
-        Vector2.new(0.5, 0),
-        "Axolion Theme (Beta)",
-        Enum.Font.GothamBold,
-        22,
-        Colors.White,
-        Enum.TextXAlignment.Center,
-        2
-    )
-    TitleLabel.TextTruncate = Enum.TextTruncate.AtEnd
-    _G.Axomusc_TitleLabel = TitleLabel
+    local SongTitle = Instance.new("TextLabel")
+    SongTitle.Name = "Song_Title"
+    SongTitle.Size = UDim2.new(1, 0, 0, 25)
+    SongTitle.Position = UDim2.new(0.5, 0, 0, 0)
+    SongTitle.AnchorPoint = Vector2.new(0.5, 0)
+    SongTitle.BackgroundTransparency = 1
+    SongTitle.Text = "Axolion Theme (Beta)"
+    SongTitle.TextColor3 = Colors.White
+    SongTitle.Font = Enum.Font.GothamBold
+    SongTitle.TextSize = 18
+    SongTitle.TextTruncate = Enum.TextTruncate.AtEnd
+    SongTitle.Parent = InfoContainer
+    _G.Axomusc_SongTitle = SongTitle
 
-    local ArtistLabel = UI.CreateTextLabel(
-        "Artist_Label",
-        MetaDataPanel,
-        UDim2.new(1, 0, 0, 20),
-        UDim2.new(0.5, 0, 0, 30),
-        Vector2.new(0.5, 0),
-        "Axolion Community",
-        Enum.Font.GothamSemibold,
-        14,
-        Colors.IceBlue,
-        Enum.TextXAlignment.Center,
-        2
-    )
-    _G.Axomusc_ArtistLabel = ArtistLabel
-
-    -- ==============================================================================
-    -- [9] ADVANCED PROGRESS BAR SYSTEM
-    -- ==============================================================================
-    local ProgressContainer = UI.CreateFrame(
-        "Progress_Container",
-        MusicContainer,
-        UDim2.new(1, -60, 0, 30),
-        UDim2.new(0.5, 0, 0.72, 0),
-        Vector2.new(0.5, 0),
-        Colors.Black,
-        1,
-        2
-    )
-
-    local TimeCurrentLabel = UI.CreateTextLabel(
-        "Time_Current",
-        ProgressContainer,
-        UDim2.new(0, 45, 1, 0),
-        UDim2.new(0, -50, 0, 0),
-        Vector2.new(0, 0),
-        "00:00",
-        Enum.Font.GothamMedium,
-        12,
-        Colors.White,
-        Enum.TextXAlignment.Right,
-        2
-    )
-
-    local TimeTotalLabel = UI.CreateTextLabel(
-        "Time_Total",
-        ProgressContainer,
-        UDim2.new(0, 45, 1, 0),
-        UDim2.new(1, 5, 0, 0),
-        Vector2.new(0, 0),
-        "00:00",
-        Enum.Font.GothamMedium,
-        12,
-        Colors.White,
-        Enum.TextXAlignment.Left,
-        2
-    )
+    local SongArtist = Instance.new("TextLabel")
+    SongArtist.Name = "Song_Artist"
+    SongArtist.Size = UDim2.new(1, 0, 0, 15)
+    SongArtist.Position = UDim2.new(0.5, 0, 0, 25)
+    SongArtist.AnchorPoint = Vector2.new(0.5, 0)
+    SongArtist.BackgroundTransparency = 1
+    SongArtist.Text = "Axolion Community"
+    SongArtist.TextColor3 = Colors.IceBlue
+    SongArtist.Font = Enum.Font.GothamSemibold
+    SongArtist.TextSize = 12
+    SongArtist.Parent = InfoContainer
 
     local ProgressHitbox = Instance.new("TextButton")
     ProgressHitbox.Name = "Progress_Hitbox"
-    ProgressHitbox.Size = UDim2.new(1, 0, 1, 0)
-    ProgressHitbox.Position = UDim2.new(0, 0, 0, 0)
+    ProgressHitbox.Size = UDim2.new(0.95, 0, 0, 20)
+    ProgressHitbox.Position = UDim2.new(0.5, 0, 0, 48)
+    ProgressHitbox.AnchorPoint = Vector2.new(0.5, 0)
     ProgressHitbox.BackgroundTransparency = 1
     ProgressHitbox.Text = ""
-    ProgressHitbox.ZIndex = 5
-    ProgressHitbox.Parent = ProgressContainer
+    ProgressHitbox.Parent = InfoContainer
 
-    local ProgressTrack = UI.CreateFrame(
-        "Progress_Track",
-        ProgressContainer,
-        UDim2.new(1, 0, 0, 6),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        Colors.DarkGray,
-        0,
-        2
-    )
-    UI.CreateCorner(ProgressTrack, UDim.new(1, 0))
-    UI.CreateStroke(ProgressTrack, Colors.Black, 1, 0)
+    local ProgressBG = Instance.new("Frame")
+    ProgressBG.Size = UDim2.new(1, 0, 0, 6)
+    ProgressBG.Position = UDim2.new(0.5, 0, 0.5, 0)
+    ProgressBG.AnchorPoint = Vector2.new(0.5, 0.5)
+    ProgressBG.BackgroundColor3 = Colors.DarkBlue
+    ProgressBG.Parent = ProgressHitbox
+    Instance.new("UICorner", ProgressBG).CornerRadius = UDim.new(1, 0)
+    Instance.new("UIStroke", ProgressBG).Color = Colors.Black
 
-    local ProgressFill = UI.CreateFrame(
-        "Progress_Fill",
-        ProgressTrack,
-        UDim2.new(0, 0, 1, 0),
-        UDim2.new(0, 0, 0, 0),
-        Vector2.new(0, 0),
-        Colors.ToscaGreen,
-        0,
-        3
-    )
-    UI.CreateCorner(ProgressFill, UDim.new(1, 0))
+    local ProgressFill = Instance.new("Frame")
+    ProgressFill.Size = UDim2.new(0, 0, 1, 0)
+    ProgressFill.BackgroundColor3 = Colors.ToscaGreen
+    ProgressFill.Parent = ProgressBG
+    Instance.new("UICorner", ProgressFill).CornerRadius = UDim.new(1, 0)
 
-    local ProgressThumb = UI.CreateFrame(
-        "Progress_Thumb",
-        ProgressFill,
-        UDim2.new(0, 14, 0, 14),
-        UDim2.new(1, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        Colors.White,
-        0,
-        4
-    )
-    UI.CreateCorner(ProgressThumb, UDim.new(1, 0))
-    UI.CreateStroke(ProgressThumb, Colors.IceBlue, 2, 0.2)
+    local ProgressThumb = Instance.new("Frame")
+    ProgressThumb.Size = UDim2.new(0, 12, 0, 12)
+    ProgressThumb.Position = UDim2.new(1, -6, 0.5, 0)
+    ProgressThumb.AnchorPoint = Vector2.new(0.5, 0.5)
+    ProgressThumb.BackgroundColor3 = Colors.White
+    ProgressThumb.Parent = ProgressFill
+    Instance.new("UICorner", ProgressThumb).CornerRadius = UDim.new(1, 0)
+    
+    local ProgressThumbGlow = CreateGlow(ProgressThumb, Colors.ToscaGreen, UDim2.new(0, 30, 0, 30), 0.5)
 
-    local ProgressThumbGlow = UI.CreateImage(
-        "Progress_Thumb_Glow",
-        ProgressThumb,
-        UDim2.new(0, 36, 0, 36),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        _G.Axomusc_Config.GlowAsset,
-        Enum.ScaleType.Stretch,
-        3
-    )
-    ProgressThumbGlow.ImageColor3 = Colors.ToscaGreen
-    ProgressThumbGlow.ImageTransparency = 0.6
+    local TimeCurrent = Instance.new("TextLabel")
+    TimeCurrent.Size = UDim2.new(0, 40, 0, 15)
+    TimeCurrent.Position = UDim2.new(0.025, 0, 0, 65)
+    TimeCurrent.BackgroundTransparency = 1
+    TimeCurrent.Text = "00:00"
+    TimeCurrent.TextColor3 = Colors.White
+    TimeCurrent.Font = Enum.Font.GothamMedium
+    TimeCurrent.TextSize = 11
+    TimeCurrent.TextXAlignment = Enum.TextXAlignment.Left
+    TimeCurrent.Parent = InfoContainer
+
+    local TimeTotal = Instance.new("TextLabel")
+    TimeTotal.Size = UDim2.new(0, 40, 0, 15)
+    TimeTotal.Position = UDim2.new(0.975, 0, 0, 65)
+    TimeTotal.AnchorPoint = Vector2.new(1, 0)
+    TimeTotal.BackgroundTransparency = 1
+    TimeTotal.Text = "00:00"
+    TimeTotal.TextColor3 = Colors.White
+    TimeTotal.Font = Enum.Font.GothamMedium
+    TimeTotal.TextSize = 11
+    TimeTotal.TextXAlignment = Enum.TextXAlignment.Right
+    TimeTotal.Parent = InfoContainer
 
     -- ==============================================================================
-    -- [10] GLASSMORPHISM MAIN CONTROL PANEL
+    -- 7. GLASSMORPHISM CONTROL PANEL
     -- ==============================================================================
-    local ControlPanel = UI.CreateFrame(
-        "Control_Panel",
-        MusicContainer,
-        UDim2.new(1, -40, 0, 75),
-        UDim2.new(0.5, 0, 1, -20),
-        Vector2.new(0.5, 1),
-        Colors.Black,
-        0.25,
-        2
-    )
-    UI.CreateCorner(ControlPanel, UDim.new(0, 20))
-    UI.CreateStroke(ControlPanel, Colors.DarkBlue, 2, 0.3)
+    local ControlPanel = Instance.new("Frame")
+    ControlPanel.Name = "Control_Panel"
+    ControlPanel.Size = UDim2.new(1, -40, 0, 70)
+    ControlPanel.Position = UDim2.new(0.5, 0, 1, -15)
+    ControlPanel.AnchorPoint = Vector2.new(0.5, 1)
+    ControlPanel.BackgroundColor3 = Colors.Black
+    ControlPanel.BackgroundTransparency = 0.2
+    ControlPanel.Parent = MusicContainer
+    
+    Instance.new("UICorner", ControlPanel).CornerRadius = UDim.new(0, 20)
+    
+    local ControlStroke = Instance.new("UIStroke")
+    ControlStroke.Color = Colors.IceBlue
+    ControlStroke.Thickness = 1.5
+    ControlStroke.Transparency = 0.4
+    ControlStroke.Parent = ControlPanel
 
     local ControlGradient = Instance.new("UIGradient")
-    ControlGradient.Color = ColorSequence.new({
+    ControlGradient.Color = ColorSequence.new{
         ColorSequenceKeypoint.new(0, Colors.DarkBlue),
         ColorSequenceKeypoint.new(0.5, Colors.Black),
         ColorSequenceKeypoint.new(1, Colors.DarkBlue)
-    })
-    ControlGradient.Rotation = 35
+    }
+    ControlGradient.Rotation = 45
     ControlGradient.Parent = ControlPanel
 
-    -- Control Panel Layout Settings
-    local ControlLayout = Instance.new("UIListLayout")
-    ControlLayout.FillDirection = Enum.FillDirection.Horizontal
-    ControlLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    ControlLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    ControlLayout.Padding = UDim.new(0, 15)
-    ControlLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    ControlLayout.Parent = ControlPanel
-
-    local function CreateControlButton(name, text, layoutOrder, defaultSize, hoverSize, color)
-        local btn = Instance.new("TextButton")
-        btn.Name = name
-        btn.Size = UDim2.new(0, 50, 0, 50)
-        btn.BackgroundTransparency = 1
-        btn.Text = text
-        btn.TextColor3 = color or Colors.White
-        btn.Font = Enum.Font.GothamBold
-        btn.TextSize = defaultSize
-        btn.LayoutOrder = layoutOrder
-        btn.AutoButtonColor = false
-        btn.ZIndex = 5
-        btn.Parent = ControlPanel
+    local function CreateControlButton(name, text, xPos, defaultSize, hoverSize, color)
+        local Btn = Instance.new("TextButton")
+        Btn.Name = name
+        Btn.Size = UDim2.new(0, 50, 0, 50)
+        Btn.Position = UDim2.new(xPos, 0, 0.5, 0)
+        Btn.AnchorPoint = Vector2.new(0.5, 0.5)
+        Btn.BackgroundTransparency = 1
+        Btn.Text = text
+        Btn.TextColor3 = color or Colors.White
+        Btn.Font = Enum.Font.GothamBold
+        Btn.TextSize = defaultSize
+        Btn.AutoButtonColor = false
+        Btn.Parent = ControlPanel
         
-        btn.MouseEnter:Connect(function() 
-            pcall(function() CreateTween(btn, 0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, {TextSize = hoverSize, TextColor3 = Colors.IceBlue}) end)
-        end)
-        btn.MouseLeave:Connect(function() 
-            pcall(function() CreateTween(btn, 0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, {TextSize = defaultSize, TextColor3 = color or Colors.White}) end)
-        end)
-        
-        return btn
+        Btn.MouseEnter:Connect(function() SmoothTween(Btn, {TextSize = hoverSize, TextColor3 = Colors.IceBlue}, 0.2) end)
+        Btn.MouseLeave:Connect(function() SmoothTween(Btn, {TextSize = defaultSize, TextColor3 = color or Colors.White}, 0.2) end)
+        return Btn
     end
 
-    local BtnSpeed = CreateControlButton("Btn_Speed", "1.0x", 1, 14, 18, Colors.White)
-    local BtnPrev  = CreateControlButton("Btn_Prev", "⏮", 2, 24, 28, Colors.White)
-    local BtnPlay  = CreateControlButton("Btn_Play", "▶", 3, 45, 50, Colors.ToscaGreen)
-    local BtnNext  = CreateControlButton("Btn_Next", "⏭", 4, 24, 28, Colors.White)
-    local BtnVol   = CreateControlButton("Btn_Vol", "🔊", 5, 24, 28, Colors.White)
-
-    -- Play Button Special Glow & Override
-    local PlayBtnGlow = UI.CreateImage(
-        "Play_Glow",
-        BtnPlay,
-        UDim2.new(0, 80, 0, 80),
-        UDim2.new(0.5, 0, 0.5, 0),
-        Vector2.new(0.5, 0.5),
-        _G.Axomusc_Config.GlowAsset,
-        Enum.ScaleType.Stretch,
-        4
-    )
-    PlayBtnGlow.ImageColor3 = Colors.ToscaGreen
-    PlayBtnGlow.ImageTransparency = 1
+    local BtnSpeed = CreateControlButton("BtnSpeed", "1x", 0.15, 14, 18, Colors.IceBlue)
+    local BtnPrev  = CreateControlButton("BtnPrev", "⏮", 0.33, 22, 26, Colors.White)
+    local BtnPlay  = CreateControlButton("BtnPlay", "▶", 0.5, 40, 45, Colors.ToscaGreen)
+    local BtnNext  = CreateControlButton("BtnNext", "⏭", 0.67, 22, 26, Colors.White)
+    local BtnVol   = CreateControlButton("BtnVol", "🔊", 0.85, 22, 26, Colors.White)
 
     BtnPlay.MouseLeave:Connect(function()
-        pcall(function()
-            local targetColor = AudioEngine.IsPlaying and Colors.ToscaGreen or Colors.White
-            CreateTween(BtnPlay, 0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, {TextSize = 45, TextColor3 = targetColor})
-        end)
+        local clr = AudioCore.IsPlaying and Colors.ToscaGreen or Colors.White
+        SmoothTween(BtnPlay, {TextSize = 40, TextColor3 = clr}, 0.2)
     end)
+    local PlayGlow = CreateGlow(BtnPlay, Colors.ToscaGreen, UDim2.new(0, 60, 0, 60), 0.8)
 
     -- ==============================================================================
-    -- [11] INTERACTIVE POPUP MENUS (SPEED & VOLUME)
+    -- 8. SPEED MENU POPUP
     -- ==============================================================================
-    local PopupContainer = UI.CreateFrame("Popup_Container", MusicContainer, UDim2.new(1,0,1,0), UDim2.new(0,0,0,0), Vector2.new(0,0), Colors.Black, 1, 10)
-    PopupContainer.Visible = false
+    local SpeedPopup = Instance.new("Frame")
+    SpeedPopup.Name = "Speed_Menu"
+    SpeedPopup.Size = UDim2.new(0, 70, 0, 130)
+    SpeedPopup.Position = UDim2.new(0.15, 0, -0.1, 0)
+    SpeedPopup.AnchorPoint = Vector2.new(0.5, 1)
+    SpeedPopup.BackgroundColor3 = Colors.Black
+    SpeedPopup.BackgroundTransparency = 0.1
+    SpeedPopup.Visible = false
+    SpeedPopup.ZIndex = 10
+    SpeedPopup.ClipsDescendants = true
+    SpeedPopup.Parent = ControlPanel
+    Instance.new("UICorner", SpeedPopup).CornerRadius = UDim.new(0, 10)
+    Instance.new("UIStroke", SpeedPopup).Color = Colors.IceBlue
 
-    local ClosePopupOverlay = Instance.new("TextButton")
-    ClosePopupOverlay.Size = UDim2.new(1,0,1,0)
-    ClosePopupOverlay.BackgroundTransparency = 1
-    ClosePopupOverlay.Text = ""
-    ClosePopupOverlay.Parent = PopupContainer
+    local SpeedLayout = Instance.new("UIListLayout")
+    SpeedLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    SpeedLayout.Parent = SpeedPopup
 
-    -- [11.1] Speed Menu
-    local SpeedMenu = UI.CreateFrame("Speed_Menu", PopupContainer, UDim2.new(0, 80, 0, 160), UDim2.new(0.15, 0, 0.85, 0), Vector2.new(0.5, 1), Colors.Black, 0.1, 11)
-    UI.CreateCorner(SpeedMenu, UDim.new(0, 12))
-    UI.CreateStroke(SpeedMenu, Colors.IceBlue, 1, 0)
-    SpeedMenu.Visible = false
-
-    local SpeedList = Instance.new("UIListLayout")
-    SpeedList.HorizontalAlignment = Enum.HorizontalAlignment.Center
-    SpeedList.SortOrder = Enum.SortOrder.LayoutOrder
-    SpeedList.Parent = SpeedMenu
-
-    local SpeedOptions = {2.0, 1.5, 1.25, 1.0, 0.75, 0.5}
-    for idx, spd in ipairs(SpeedOptions) do
-        local spdBtn = Instance.new("TextButton")
-        spdBtn.Size = UDim2.new(1, 0, 0, 26)
-        spdBtn.BackgroundTransparency = 1
-        spdBtn.Text = string.format("%.2fx", spd)
-        spdBtn.TextColor3 = Colors.White
-        spdBtn.Font = Enum.Font.GothamMedium
-        spdBtn.TextSize = 13
-        spdBtn.LayoutOrder = idx
-        spdBtn.Parent = SpeedMenu
-
-        spdBtn.MouseEnter:Connect(function() pcall(function() CreateTween(spdBtn, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, {BackgroundColor3 = Colors.DarkBlue, BackgroundTransparency = 0.3, TextColor3 = Colors.ToscaGreen}) end) end)
-        spdBtn.MouseLeave:Connect(function() pcall(function() CreateTween(spdBtn, 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out, {BackgroundTransparency = 1, TextColor3 = Colors.White}) end) end)
+    local Speeds = {2.0, 1.5, 1.25, 1.0, 0.5}
+    for _, spd in ipairs(Speeds) do
+        local b = Instance.new("TextButton")
+        b.Size = UDim2.new(1, 0, 0.2, 0)
+        b.BackgroundTransparency = 1
+        b.Text = string.format("%.2fx", spd)
+        b.TextColor3 = Colors.White
+        b.Font = Enum.Font.GothamSemibold
+        b.TextSize = 12
+        b.ZIndex = 11
+        b.Parent = SpeedPopup
         
-        spdBtn.MouseButton1Click:Connect(function()
-            pcall(function()
-                AudioEngine.PlaybackSpeed = spd
-                _G.Axomusc_State.Speed = spd
-                BtnSpeed.Text = (spd == 1.0) and "1.0x" or string.format("%.1fx", spd)
-                SpeedMenu.Visible = false
-                PopupContainer.Visible = false
-            end)
+        b.MouseEnter:Connect(function() SmoothTween(b, {BackgroundColor3 = Colors.DarkBlue, BackgroundTransparency = 0.5}, 0.2) end)
+        b.MouseLeave:Connect(function() SmoothTween(b, {BackgroundTransparency = 1}, 0.2) end)
+        
+        b.MouseButton1Click:Connect(function()
+            AudioCore.PlaybackSpeed = spd
+            BtnSpeed.Text = (spd == 1.0) and "1x" or string.format("%.1fx", spd)
+            SpeedPopup.Visible = false
         end)
     end
+    BtnSpeed.MouseButton1Click:Connect(function() SpeedPopup.Visible = not SpeedPopup.Visible if _G.VolPopup then _G.VolPopup.Visible = false end end)
 
-    -- [11.2] Volume Menu
-    local VolumeMenu = UI.CreateFrame("Volume_Menu", PopupContainer, UDim2.new(0, 180, 0, 50), UDim2.new(0.85, 0, 0.85, 0), Vector2.new(0.5, 1), Colors.Black, 0.1, 11)
-    UI.CreateCorner(VolumeMenu, UDim.new(0, 12))
-    UI.CreateStroke(VolumeMenu, Colors.ToscaGreen, 1, 0)
-    VolumeMenu.Visible = false
+    -- ==============================================================================
+    -- 9. VOLUME POPUP
+    -- ==============================================================================
+    local VolPopup = Instance.new("Frame")
+    VolPopup.Name = "Volume_Menu"
+    VolPopup.Size = UDim2.new(0, 150, 0, 45)
+    VolPopup.Position = UDim2.new(0.85, 0, -0.1, 0)
+    VolPopup.AnchorPoint = Vector2.new(0.5, 1)
+    VolPopup.BackgroundColor3 = Colors.Black
+    VolPopup.BackgroundTransparency = 0.1
+    VolPopup.Visible = false
+    VolPopup.ZIndex = 10
+    VolPopup.Parent = ControlPanel
+    _G.VolPopup = VolPopup
+    Instance.new("UICorner", VolPopup).CornerRadius = UDim.new(0, 10)
+    Instance.new("UIStroke", VolPopup).Color = Colors.IceBlue
 
-    local VolTextVal = UI.CreateTextLabel("Vol_Val", VolumeMenu, UDim2.new(0, 30, 1, 0), UDim2.new(1, -35, 0, 0), Vector2.new(0,0), "50%", Enum.Font.GothamBold, 12, Colors.White, Enum.TextXAlignment.Right, 12)
-    
     local VolHitbox = Instance.new("TextButton")
-    VolHitbox.Size = UDim2.new(0, 120, 1, 0)
-    VolHitbox.Position = UDim2.new(0, 15, 0, 0)
+    VolHitbox.Size = UDim2.new(0, 100, 1, 0)
+    VolHitbox.Position = UDim2.new(0, 10, 0, 0)
     VolHitbox.BackgroundTransparency = 1
     VolHitbox.Text = ""
-    VolHitbox.ZIndex = 15
-    VolHitbox.Parent = VolumeMenu
+    VolHitbox.ZIndex = 11
+    VolHitbox.Parent = VolPopup
 
-    local VolTrack = UI.CreateFrame("Vol_Track", VolHitbox, UDim2.new(1, 0, 0, 6), UDim2.new(0.5, 0, 0.5, 0), Vector2.new(0.5, 0.5), Colors.DarkGray, 0, 12)
-    UI.CreateCorner(VolTrack, UDim.new(1, 0))
-    
-    local VolFill = UI.CreateFrame("Vol_Fill", VolTrack, UDim2.new(0.5, 0, 1, 0), UDim2.new(0, 0, 0, 0), Vector2.new(0,0), Colors.IceBlue, 0, 13)
-    UI.CreateCorner(VolFill, UDim.new(1, 0))
+    local VolBarBG = Instance.new("Frame")
+    VolBarBG.Size = UDim2.new(1, 0, 0, 6)
+    VolBarBG.Position = UDim2.new(0, 0, 0.5, 0)
+    VolBarBG.AnchorPoint = Vector2.new(0, 0.5)
+    VolBarBG.BackgroundColor3 = Colors.DarkBlue
+    VolBarBG.ZIndex = 11
+    VolBarBG.Parent = VolHitbox
+    Instance.new("UICorner", VolBarBG).CornerRadius = UDim.new(1, 0)
 
-    local VolThumb = UI.CreateFrame("Vol_Thumb", VolFill, UDim2.new(0, 14, 0, 14), UDim2.new(1, 0, 0.5, 0), Vector2.new(0.5, 0.5), Colors.White, 0, 14)
-    UI.CreateCorner(VolThumb, UDim.new(1, 0))
+    local VolBarFill = Instance.new("Frame")
+    VolBarFill.Size = UDim2.new(0.5, 0, 1, 0)
+    VolBarFill.BackgroundColor3 = Colors.ToscaGreen
+    VolBarFill.ZIndex = 12
+    VolBarFill.Parent = VolBarBG
+    Instance.new("UICorner", VolBarFill).CornerRadius = UDim.new(1, 0)
 
-    -- Popup Toggles
-    BtnSpeed.MouseButton1Click:Connect(function()
-        pcall(function()
-            PopupContainer.Visible = true
-            SpeedMenu.Visible = true
-            VolumeMenu.Visible = false
-        end)
-    end)
+    local VolText = Instance.new("TextLabel")
+    VolText.Size = UDim2.new(0, 30, 1, 0)
+    VolText.Position = UDim2.new(1, -35, 0, 0)
+    VolText.BackgroundTransparency = 1
+    VolText.Text = "50%"
+    VolText.TextColor3 = Colors.White
+    VolText.Font = Enum.Font.GothamMedium
+    VolText.TextSize = 11
+    VolText.ZIndex = 11
+    VolText.Parent = VolPopup
 
-    BtnVol.MouseButton1Click:Connect(function()
-        pcall(function()
-            PopupContainer.Visible = true
-            VolumeMenu.Visible = true
-            SpeedMenu.Visible = false
-        end)
-    end)
-
-    ClosePopupOverlay.MouseButton1Click:Connect(function()
-        pcall(function()
-            PopupContainer.Visible = false
-            SpeedMenu.Visible = false
-            VolumeMenu.Visible = false
-        end)
-    end)
+    BtnVol.MouseButton1Click:Connect(function() VolPopup.Visible = not VolPopup.Visible SpeedPopup.Visible = false end)
 
     -- ==============================================================================
-    -- [12] COMPLEX INPUT SYSTEM & LOGIC
+    -- 10. DRAGGING LOGIC (VOLUME & PROGRESS)
     -- ==============================================================================
-    local function UpdateVolumeVisual(input)
-        pcall(function()
-            local bounds = VolHitbox.AbsoluteSize.X
-            local minX = VolHitbox.AbsolutePosition.X
-            local mouseX = input.Position.X
-            local percentage = MathUtils.Clamp((mouseX - minX) / bounds, 0, 1)
-            
-            VolFill.Size = UDim2.new(percentage, 0, 1, 0)
-            local volInt = math.floor(percentage * 100)
-            VolTextVal.Text = tostring(volInt) .. "%"
-            
-            AudioEngine.Volume = percentage
-            _G.Axomusc_State.Volume = percentage
+    local isDraggingVol = false
+    local isDraggingProg = false
 
-            if volInt == 0 then BtnVol.Text = "🔇"
-            elseif volInt < 40 then BtnVol.Text = "🔉"
-            else BtnVol.Text = "🔊" end
-        end)
-    end
-
-    local function UpdateProgressVisual(input)
-        pcall(function()
-            local bounds = ProgressHitbox.AbsoluteSize.X
-            local minX = ProgressHitbox.AbsolutePosition.X
-            local mouseX = input.Position.X
-            local percentage = MathUtils.Clamp((mouseX - minX) / bounds, 0, 1)
-            
-            ProgressFill.Size = UDim2.new(percentage, 0, 1, 0)
-            
-            local duration = AudioEngine.TimeLength
-            if duration and duration == duration and duration > 0 and duration ~= math.huge then
-                local targetTime = duration * percentage
-                TimeCurrentLabel.Text = MathUtils.FormatTime(targetTime)
-            end
-        end)
+    local function UpdateVolume(input)
+        local mousePos = input.Position.X
+        local barPos = VolHitbox.AbsolutePosition.X
+        local barSize = VolHitbox.AbsoluteSize.X
+        local percent = math.clamp((mousePos - barPos) / barSize, 0, 1)
+        VolBarFill.Size = UDim2.new(percent, 0, 1, 0)
+        local volVal = math.floor(percent * 100)
+        VolText.Text = volVal .. "%"
+        AudioCore.Volume = percent
+        if volVal == 0 then BtnVol.Text = "🔇" elseif volVal < 50 then BtnVol.Text = "🔉" else BtnVol.Text = "🔊" end
     end
 
     VolHitbox.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            _G.Axomusc_State.IsDraggingVolume = true
-            UpdateVolumeVisual(input)
+            isDraggingVol = true; UpdateVolume(input)
         end
     end)
 
+    local function UpdateProgress(input)
+        local mousePos = input.Position.X
+        local barPos = ProgressHitbox.AbsolutePosition.X
+        local barSize = ProgressHitbox.AbsoluteSize.X
+        local percent = math.clamp((mousePos - barPos) / barSize, 0, 1)
+        ProgressFill.Size = UDim2.new(percent, 0, 1, 0)
+        local totalLen = AudioCore.TimeLength
+        if totalLen and totalLen == totalLen and totalLen > 0 then TimeCurrent.Text = FormatTime(totalLen * percent) end
+    end
+
     ProgressHitbox.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            _G.Axomusc_State.IsDraggingProgress = true
-            UpdateProgressVisual(input)
+            isDraggingProg = true; UpdateProgress(input)
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            if _G.Axomusc_State.IsDraggingVolume then UpdateVolumeVisual(input) end
-            if _G.Axomusc_State.IsDraggingProgress then UpdateProgressVisual(input) end
+            if isDraggingVol then UpdateVolume(input) end
+            if isDraggingProg then UpdateProgress(input) end
         end
     end)
 
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if _G.Axomusc_State.IsDraggingVolume then
-                _G.Axomusc_State.IsDraggingVolume = false
-            end
-            if _G.Axomusc_State.IsDraggingProgress then
-                _G.Axomusc_State.IsDraggingProgress = false
-                pcall(function()
-                    local duration = AudioEngine.TimeLength
-                    if duration and duration == duration and duration > 0 and duration ~= math.huge then
-                        local finalPercent = ProgressFill.Size.X.Scale
-                        AudioEngine.TimePosition = duration * finalPercent
-                    end
-                end)
+            isDraggingVol = false
+            if isDraggingProg then
+                isDraggingProg = false
+                local percent = ProgressFill.Size.X.Scale
+                local totalLen = AudioCore.TimeLength
+                if totalLen and totalLen == totalLen and totalLen > 0 then AudioCore.TimePosition = totalLen * percent end
             end
         end
     end)
 
     -- ==============================================================================
-    -- [13] GLOBAL PLAYBACK API (SECURE ACCESS POINT)
+    -- 11. GLOBAL PLAYBACK CONTROLS
     -- ==============================================================================
     _G.Axomusc_PlaySong = function(MusicID, MusicName, MusicArtist)
         pcall(function()
-            local CleanID = tostring(MusicID):gsub("%D", "")
-            if CleanID == "" then return end
-            
-            AudioEngine:Stop()
-            AudioEngine.SoundId = "rbxassetid://" .. CleanID
-            AudioEngine.TimePosition = 0
-            
-            _G.Axomusc_State.CurrentID = CleanID
-            _G.Axomusc_State.CurrentTitle = tostring(MusicName or "Unknown Title")
-            _G.Axomusc_State.CurrentArtist = tostring(MusicArtist or "Axolion Community")
-            
-            TitleLabel.Text = _G.Axomusc_State.CurrentTitle
-            ArtistLabel.Text = _G.Axomusc_State.CurrentArtist
-            TimeCurrentLabel.Text = "00:00"
-            TimeTotalLabel.Text = "Loading..."
+            AudioCore:Stop()
+            AudioCore.SoundId = "rbxassetid://" .. tostring(MusicID)
+            SongTitle.Text = tostring(MusicName)
+            SongArtist.Text = MusicArtist or "Axolion Community"
             ProgressFill.Size = UDim2.new(0, 0, 1, 0)
-            
-            AudioEngine:Play()
-            
+            TimeCurrent.Text = "00:00"
+            TimeTotal.Text = "--:--"
+            AudioCore:Play()
             BtnPlay.Text = "⏸"
-            PlayBtnGlow.ImageTransparency = 0.3
-            CreateTween(BtnPlay, 0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, {TextColor3 = Colors.ToscaGreen})
+            PlayGlow.ImageTransparency = 0.5
+            SmoothTween(BtnPlay, {TextColor3 = Colors.ToscaGreen}, 0.2)
         end)
     end
 
-    _G.Axomusc_TogglePlayback = function()
+    _G.Axomusc_TogglePause = function()
         pcall(function()
-            if AudioEngine.SoundId == "" then return end
-            
-            if AudioEngine.IsPlaying then
-                AudioEngine:Pause()
+            if AudioCore.SoundId == "" then return end
+            if AudioCore.IsPlaying then
+                AudioCore:Pause()
                 BtnPlay.Text = "▶"
-                PlayBtnGlow.ImageTransparency = 1
-                CreateTween(BtnPlay, 0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, {TextColor3 = Colors.White})
+                PlayGlow.ImageTransparency = 1
+                SmoothTween(BtnPlay, {TextColor3 = Colors.White}, 0.2)
             else
-                AudioEngine:Play()
+                AudioCore:Play()
                 BtnPlay.Text = "⏸"
-                PlayBtnGlow.ImageTransparency = 0.3
-                CreateTween(BtnPlay, 0.2, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, {TextColor3 = Colors.ToscaGreen})
+                PlayGlow.ImageTransparency = 0.5
+                SmoothTween(BtnPlay, {TextColor3 = Colors.ToscaGreen}, 0.2)
             end
         end)
     end
 
-    BtnPlay.MouseButton1Click:Connect(_G.Axomusc_TogglePlayback)
+    BtnPlay.MouseButton1Click:Connect(_G.Axomusc_TogglePause)
 
     -- ==============================================================================
-    -- [14] RENDER STEPPED (ENGINE TICK, ANIMATIONS, ANTI-FREEZE SYSTEM)
+    -- 12. RENDER STEPPED (SMOOTH ANIMATIONS)
     -- ==============================================================================
+    local currentBassGlow = 1
+    local targetBassGlow = 1
+
     RunService.RenderStepped:Connect(function(deltaTime)
         pcall(function()
-            -- 1. Rotate Bass Gradient Always
-            BassGradient.Rotation = (BassGradient.Rotation + (100 * deltaTime)) % 360
-            
-            -- 2. State & Safety Check Validation
-            local isPlaying = AudioEngine.IsPlaying
-            local cTime = AudioEngine.TimePosition
-            local tTime = AudioEngine.TimeLength
-            
-            -- NaN Protection Logic
-            local validTime = (tTime and tTime == tTime and tTime > 0 and tTime ~= math.huge)
+            BassGradient.Rotation = (BassGradient.Rotation + (120 * deltaTime)) % 360
+            if AudioCore.IsPlaying then
+                AlbumCD.Rotation = (AlbumCD.Rotation + (35 * AudioCore.PlaybackSpeed * deltaTime)) % 360
+                local loudness = AudioCore.PlaybackLoudness or 0
+                targetBassGlow = 1 + math.clamp(loudness / 900, 0.0, 0.4)
+                currentBassGlow = currentBassGlow + (targetBassGlow - currentBassGlow) * (deltaTime * 15)
+                RGB_Bass.Size = UDim2.new(currentBassGlow, 20, currentBassGlow, 20)
 
-            if isPlaying then
-                -- A. Audio Reactive Visuals
-                local loudness = AudioEngine.PlaybackLoudness or 0
-                local targetScale = 1.0 + MathUtils.Clamp(loudness / 1000, 0.0, 0.35)
-                
-                _G.Axomusc_State.BassPulseCurrent = MathUtils.Lerp(_G.Axomusc_State.BassPulseCurrent, targetScale, deltaTime * 12)
-                BassGlow.Size = UDim2.new(_G.Axomusc_State.BassPulseCurrent, 40, _G.Axomusc_State.BassPulseCurrent, 40)
-                
-                -- B. Vinyl Rotation Math
-                local rotationSpeed = 40 * AudioEngine.PlaybackSpeed
-                _G.Axomusc_State.VinylRotation = (_G.Axomusc_State.VinylRotation + (rotationSpeed * deltaTime)) % 360
-                VinylRecord.Rotation = _G.Axomusc_State.VinylRotation
-                
-                -- C. Dynamic Progress Update
-                if validTime then
-                    TimeTotalLabel.Text = MathUtils.FormatTime(tTime)
-                    if not _G.Axomusc_State.IsDraggingProgress then
-                        local progressRatio = MathUtils.Clamp(cTime / tTime, 0, 1)
-                        TimeCurrentLabel.Text = MathUtils.FormatTime(cTime)
-                        
-                        -- Smooth Lerp for Progress Bar
+                local cTime = AudioCore.TimePosition
+                local tTime = AudioCore.TimeLength
+                if tTime and tTime == tTime and tTime > 0 then
+                    TimeTotal.Text = FormatTime(tTime)
+                    if not isDraggingProg then
+                        local progressRatio = math.clamp(cTime / tTime, 0, 1)
+                        TimeCurrent.Text = FormatTime(cTime)
                         local currentScale = ProgressFill.Size.X.Scale
-                        local nextScale = MathUtils.Lerp(currentScale, progressRatio, deltaTime * 15)
-                        ProgressFill.Size = UDim2.new(nextScale, 0, 1, 0)
+                        local newScale = currentScale + (progressRatio - currentScale) * (deltaTime * 20)
+                        ProgressFill.Size = UDim2.new(newScale, 0, 1, 0)
                     end
                 else
-                    TimeTotalLabel.Text = "Loading..."
-                end
-                
-                -- D. Auto-Next Logic (If song finished naturally)
-                if validTime and cTime >= (tTime - 0.2) and not _G.Axomusc_State.IsDraggingProgress then
-                    if _G.Axomusc_PlayNextFromPlaylist then
-                        _G.Axomusc_PlayNextFromPlaylist() -- To be defined in Tahap 2
-                    else
-                        AudioEngine:Stop()
-                        BtnPlay.Text = "▶"
-                        PlayBtnGlow.ImageTransparency = 1
-                        BtnPlay.TextColor3 = Colors.White
-                        ProgressFill.Size = UDim2.new(0, 0, 1, 0)
-                        TimeCurrentLabel.Text = "00:00"
-                    end
+                    TimeTotal.Text = "Loading"
                 end
             else
-                -- Graceful Fallback Animations when paused/stopped
-                _G.Axomusc_State.BassPulseCurrent = MathUtils.Lerp(_G.Axomusc_State.BassPulseCurrent, 1.0, deltaTime * 8)
-                BassGlow.Size = UDim2.new(_G.Axomusc_State.BassPulseCurrent, 40, _G.Axomusc_State.BassPulseCurrent, 40)
+                targetBassGlow = 1
+                currentBassGlow = currentBassGlow + (targetBassGlow - currentBassGlow) * (deltaTime * 5)
+                RGB_Bass.Size = UDim2.new(currentBassGlow, 20, currentBassGlow, 20)
             end
         end)
     end)
 
 end)
 
-if not Tahap1_Success then 
-    warn("[Axolion Premium] Tahap 1 Critical System Recovery: " .. tostring(Tahap1_Error)) 
-end
-
 -- ==============================================================================
--- [ AXOLION COMMUNITY (BETA) - UI SCRIPT ]
--- TAHAP 2: FOLDER SYSTEM, DYNAMIC PLAYLIST, & SLIDING QUEUE SINKRONISASI
+-- LOGIC PLAY TAHAP 2 - GLOBAL PLAY OVERRIDE & VISUAL FIX
 -- ==============================================================================
-
-local Tahap2_Success, Tahap2_Error = pcall(function()
-    
-    local TweenService = game:GetService("TweenService")
-    local Colors = _G.Axomusc_Config.Colors
-    
-    -- ==============================================================================
-    -- [1] DATABASE LAGU (CONTOH/DUMMY LIBRARY UNTUK FOLDER)
-    -- ==============================================================================
-    _G.Axomusc_Library = {
-        ["Axolion Vibes"] = {
-            {Title = "Cyberpunk Intro", Artist = "Axolion Audio", ID = "6023247076"},
-            {Title = "Chill Vibes", Artist = "Community", ID = "5806652150"},
-            {Title = "Epic Cinematic", Artist = "Axolion", ID = "1839843701"}
-        },
-        ["Trending & Pop"] = {
-            {Title = "Fearless", Artist = "Lost Sky", ID = "314818164"},
-            {Title = "Invincible", Artist = "DEAF KEV", ID = "163612502"},
-            {Title = "Fade", Artist = "Alan Walker", ID = "279207008"}
-        },
-        ["NCS / EDM"] = {
-            {Title = "Blank", Artist = "Disfigure", ID = "143657788"},
-            {Title = "Symbolism", Artist = "Electro-Light", ID = "231362095"}
-        }
-    }
-
-    -- ==============================================================================
-    -- [2] STATE MANAGER UNTUK PLAYLIST & QUEUE
-    -- ==============================================================================
-    _G.Axomusc_Queue = {}
-    _G.Axomusc_CurrentIndex = 0
-
-    local function CreateTween(object, time, properties)
-        local t = TweenService:Create(object, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
-        t:Play()
-        return t
-    end
-
-    -- ==============================================================================
-    -- [3] FOLDER MENU (HORIZONTAL TABS & VERTICAL LIST)
-    -- ==============================================================================
-    local FolderPage = _G.Page_Folder.Page
-    FolderPage.CanvasSize = UDim2.new(0, 0, 0, 0) -- Disable default scroll untuk custom layout
-    FolderPage.ScrollBarThickness = 0
-    
-    -- Hapus layout bawaan dari Bagian 1 agar tidak bentrok
-    for _, child in pairs(FolderPage:GetChildren()) do
-        if child:IsA("UIListLayout") or child:IsA("UIPadding") then child:Destroy() end
-    end
-
-    -- [3.1] Horizontal Tab Container
-    local TabContainer = Instance.new("ScrollingFrame")
-    TabContainer.Name = "Category_Tabs"
-    TabContainer.Size = UDim2.new(1, -20, 0, 45)
-    TabContainer.Position = UDim2.new(0, 10, 0, 10)
-    TabContainer.BackgroundTransparency = 1
-    TabContainer.ScrollBarThickness = 0
-    TabContainer.CanvasSize = UDim2.new(2, 0, 0, 0) -- Akan di-update dinamis
-    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
-    TabContainer.Parent = FolderPage
-
-    local TabLayout = Instance.new("UIListLayout")
-    TabLayout.FillDirection = Enum.FillDirection.Horizontal
-    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    TabLayout.Padding = UDim.new(0, 10)
-    TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-    TabLayout.Parent = TabContainer
-
-    -- [3.2] Vertical Song List Container
-    local SongContainer = Instance.new("ScrollingFrame")
-    SongContainer.Name = "Song_List"
-    SongContainer.Size = UDim2.new(1, -20, 1, -75)
-    SongContainer.Position = UDim2.new(0, 10, 0, 65)
-    SongContainer.BackgroundTransparency = 1
-    SongContainer.ScrollBarThickness = 4
-    SongContainer.ScrollBarImageColor3 = Colors.ToscaGreen
-    SongContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
-    SongContainer.Parent = FolderPage
-
-    local SongLayout = Instance.new("UIListLayout")
-    SongLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    SongLayout.Padding = UDim.new(0, 8)
-    SongLayout.Parent = SongContainer
-
-    SongLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        SongContainer.CanvasSize = UDim2.new(0, 0, 0, SongLayout.AbsoluteContentSize.Y + 10)
-    end)
-    TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
-        TabContainer.CanvasSize = UDim2.new(0, TabLayout.AbsoluteContentSize.X + 10, 0, 0)
-    end)
-
-    -- [3.3] Fungsi Render Daftar Lagu
-    local function RenderSongs(CategoryName)
-        -- Clear previous songs
-        for _, child in pairs(SongContainer:GetChildren()) do
-            if child:IsA("Frame") then child:Destroy() end
+pcall(function()
+    _G.Axomusc_PlayFromPlaylist = function(MusicID, MusicName, MusicArtist, ButtonUI)
+        if _G.Axomusc_PlaySong then
+            _G.Axomusc_PlaySong(MusicID, MusicName, MusicArtist)
         end
-
-        local songs = _G.Axomusc_Library[CategoryName] or {}
-        for i, song in ipairs(songs) do
-            local Card = Instance.new("Frame")
-            Card.Name = "Card_" .. i
-            Card.Size = UDim2.new(1, -10, 0, 60)
-            Card.BackgroundColor3 = Colors.DarkBlue
-            Card.BackgroundTransparency = 0.5
-            Card.BorderSizePixel = 0
-            Card.Parent = SongContainer
-
-            local CardCorner = Instance.new("UICorner")
-            CardCorner.CornerRadius = UDim.new(0, 8)
-            CardCorner.Parent = Card
-
-            local CardStroke = Instance.new("UIStroke")
-            CardStroke.Color = Colors.IceBlue
-            CardStroke.Transparency = 0.8
-            CardStroke.Parent = Card
-
-            -- Thumbnail Dummy
-            local Thumb = Instance.new("ImageLabel")
-            Thumb.Size = UDim2.new(0, 45, 0, 45)
-            Thumb.Position = UDim2.new(0, 10, 0.5, -22.5)
-            Thumb.BackgroundColor3 = Colors.Black
-            Thumb.Image = _G.Axomusc_Config.Thumbnail
-            Thumb.ScaleType = Enum.ScaleType.Crop
-            Thumb.Parent = Card
-            Instance.new("UICorner", Thumb).CornerRadius = UDim.new(0, 6)
-
-            -- Meta
-            local Title = Instance.new("TextLabel")
-            Title.Size = UDim2.new(1, -150, 0, 20)
-            Title.Position = UDim2.new(0, 65, 0, 10)
-            Title.BackgroundTransparency = 1
-            Title.Text = song.Title
-            Title.TextColor3 = Colors.White
-            Title.Font = Enum.Font.GothamBold
-            Title.TextSize = 14
-            Title.TextXAlignment = Enum.TextXAlignment.Left
-            Title.Parent = Card
-
-            local Artist = Instance.new("TextLabel")
-            Artist.Size = UDim2.new(1, -150, 0, 15)
-            Artist.Position = UDim2.new(0, 65, 0, 32)
-            Artist.BackgroundTransparency = 1
-            Artist.Text = song.Artist
-            Artist.TextColor3 = Colors.ToscaGreen
-            Artist.Font = Enum.Font.Gotham
-            Artist.TextSize = 12
-            Artist.TextXAlignment = Enum.TextXAlignment.Left
-            Artist.Parent = Card
-
-            -- Add to Queue Button
-            local AddBtn = Instance.new("TextButton")
-            AddBtn.Size = UDim2.new(0, 35, 0, 35)
-            AddBtn.Position = UDim2.new(1, -45, 0.5, -17.5)
-            AddBtn.BackgroundColor3 = Colors.ToscaGreen
-            AddBtn.BackgroundTransparency = 0.8
-            AddBtn.Text = "+"
-            AddBtn.TextColor3 = Colors.White
-            AddBtn.Font = Enum.Font.GothamBold
-            AddBtn.TextSize = 20
-            AddBtn.Parent = Card
-            Instance.new("UICorner", AddBtn).CornerRadius = UDim.new(0, 6)
-            Instance.new("UIStroke", AddBtn).Color = Colors.ToscaGreen
-
-            AddBtn.MouseButton1Click:Connect(function()
-                table.insert(_G.Axomusc_Queue, song)
-                if _G.Axomusc_Notify then
-                    _G.Axomusc_Notify("Playlist Diperbarui", song.Title .. " ditambahkan ke antrean.", 2)
-                end
-                if _G.Axomusc_RefreshPlaylistUI then _G.Axomusc_RefreshPlaylistUI() end
-                
-                -- Animasi Klik
-                CreateTween(AddBtn, 0.1, {BackgroundColor3 = Colors.IceBlue})
-                task.wait(0.1)
-                CreateTween(AddBtn, 0.3, {BackgroundColor3 = Colors.ToscaGreen})
-            end)
-            
-            -- Play Direct Button
-            local PlayBtn = Instance.new("TextButton")
-            PlayBtn.Size = UDim2.new(0, 35, 0, 35)
-            PlayBtn.Position = UDim2.new(1, -90, 0.5, -17.5)
-            PlayBtn.BackgroundColor3 = Colors.IceBlue
-            PlayBtn.BackgroundTransparency = 0.8
-            PlayBtn.Text = "▶"
-            PlayBtn.TextColor3 = Colors.White
-            PlayBtn.Font = Enum.Font.GothamBold
-            PlayBtn.TextSize = 16
-            PlayBtn.Parent = Card
-            Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0, 6)
-            Instance.new("UIStroke", PlayBtn).Color = Colors.IceBlue
-
-            PlayBtn.MouseButton1Click:Connect(function()
-                if _G.Axomusc_PlaySong then
-                    _G.Axomusc_PlaySong(song.ID, song.Title, song.Artist)
-                    
-                    -- Insert ke queue dan jadikan index ini
-                    table.insert(_G.Axomusc_Queue, song)
-                    _G.Axomusc_CurrentIndex = #_G.Axomusc_Queue
-                    if _G.Axomusc_RefreshPlaylistUI then _G.Axomusc_RefreshPlaylistUI() end
-                end
-            end)
+        if _G.Axomusc_CDWrapper and _G.Axomusc_CDWrapper.Position.Y.Scale ~= 0.08 then
+            _G.Axomusc_CDWrapper.Position = UDim2.new(0.5, 0, 0.08, 0)
+        end
+        if ButtonUI and ButtonUI:IsA("GuiObject") then
+            local flash = Instance.new("Frame")
+            flash.Size = UDim2.new(1,0,1,0)
+            flash.BackgroundColor3 = Color3.fromRGB(0, 200, 150)
+            flash.BackgroundTransparency = 0.5
+            flash.ZIndex = ButtonUI.ZIndex + 5
+            flash.Parent = ButtonUI
+            local tw = game:GetService("TweenService"):Create(flash, TweenInfo.new(0.5), {BackgroundTransparency = 1})
+            tw:Play()
+            tw.Completed:Connect(function() flash:Destroy() end)
         end
     end
-
-    -- [3.4] Buat Tab Buttons Dinamis
-    local activeTabLine = nil
-    for CatName, _ in pairs(_G.Axomusc_Library) do
-        local TabBtn = Instance.new("TextButton")
-        TabBtn.Name = "Tab_" .. CatName
-        TabBtn.Size = UDim2.new(0, 120, 0, 30)
-        TabBtn.BackgroundColor3 = Colors.Black
-        TabBtn.BackgroundTransparency = 0.4
-        TabBtn.Text = CatName
-        TabBtn.TextColor3 = Colors.White
-        TabBtn.Font = Enum.Font.GothamSemibold
-        TabBtn.TextSize = 13
-        TabBtn.Parent = TabContainer
-        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
-        
-        local Indicator = Instance.new("Frame")
-        Indicator.Size = UDim2.new(0, 0, 0, 2)
-        Indicator.Position = UDim2.new(0.5, 0, 1, -2)
-        Indicator.AnchorPoint = Vector2.new(0.5, 0)
-        Indicator.BackgroundColor3 = Colors.ToscaGreen
-        Indicator.BorderSizePixel = 0
-        Indicator.Parent = TabBtn
-
-        TabBtn.MouseButton1Click:Connect(function()
-            -- Reset semua tab
-            for _, child in pairs(TabContainer:GetChildren()) do
-                if child:IsA("TextButton") then
-                    CreateTween(child, 0.3, {TextColor3 = Colors.White, BackgroundTransparency = 0.4})
-                    CreateTween(child:FindFirstChild("Frame"), 0.3, {Size = UDim2.new(0, 0, 0, 2)})
-                end
-            end
-            -- Aktifkan tab ini
-            CreateTween(TabBtn, 0.3, {TextColor3 = Colors.ToscaGreen, BackgroundTransparency = 0})
-            CreateTween(Indicator, 0.3, {Size = UDim2.new(0.8, 0, 0, 2)})
-            RenderSongs(CatName)
-        end)
-    end
-
-    -- Render Tab Pertama Secara Default
-    local firstTab = TabContainer:FindFirstChildWhichIsA("TextButton")
-    if firstTab then
-        -- Simulasikan klik pada tab pertama
-        for _, connection in pairs(getconnections(firstTab.MouseButton1Click) or {}) do connection.Function() end
-        if not getconnections then -- Fallback jika getconnections tidak didukung exploit
-            CreateTween(firstTab, 0.3, {TextColor3 = Colors.ToscaGreen, BackgroundTransparency = 0})
-            CreateTween(firstTab:FindFirstChild("Frame"), 0.3, {Size = UDim2.new(0.8, 0, 0, 2)})
-            RenderSongs(firstTab.Text)
-        end
-    end
-
-
-    -- ==============================================================================
-    -- [4] PLAYLIST MENU (MANAGE QUEUE)
-    -- ==============================================================================
-    local PlaylistPage = _G.Page_Playlist.Page
-    
-    _G.Axomusc_RefreshPlaylistUI = function()
-        for _, child in pairs(PlaylistPage:GetChildren()) do
-            if child:IsA("Frame") and child.Name:match("QCard_") then child:Destroy() end
-        end
-
-        if #_G.Axomusc_Queue == 0 then
-            local EmptyText = Instance.new("TextLabel")
-            EmptyText.Name = "QCard_Empty"
-            EmptyText.Size = UDim2.new(1, 0, 0, 50)
-            EmptyText.BackgroundTransparency = 1
-            EmptyText.Text = "Antrean kosong. Tambahkan lagu dari Folder."
-            EmptyText.TextColor3 = Colors.White
-            EmptyText.TextTransparency = 0.5
-            EmptyText.Font = Enum.Font.Gotham
-            EmptyText.TextSize = 13
-            EmptyText.Parent = PlaylistPage
-            return
-        end
-
-        for i, song in ipairs(_G.Axomusc_Queue) do
-            local isPlaying = (i == _G.Axomusc_CurrentIndex)
-
-            local QCard = Instance.new("Frame")
-            QCard.Name = "QCard_" .. i
-            QCard.Size = UDim2.new(1, -10, 0, 50)
-            QCard.BackgroundColor3 = isPlaying and Colors.ToscaGreen or Colors.DarkBlue
-            QCard.BackgroundTransparency = isPlaying and 0.2 or 0.6
-            QCard.BorderSizePixel = 0
-            QCard.Parent = PlaylistPage
-            Instance.new("UICorner", QCard).CornerRadius = UDim.new(0, 6)
-
-            local Title = Instance.new("TextLabel")
-            Title.Size = UDim2.new(1, -80, 1, 0)
-            Title.Position = UDim2.new(0, 15, 0, 0)
-            Title.BackgroundTransparency = 1
-            Title.Text = tostring(i) .. ". " .. song.Title
-            Title.TextColor3 = isPlaying and Colors.Black or Colors.White
-            Title.Font = isPlaying and Enum.Font.GothamBold or Enum.Font.GothamSemibold
-            Title.TextSize = 13
-            Title.TextXAlignment = Enum.TextXAlignment.Left
-            Title.Parent = QCard
-
-            -- Delete Button
-            local DelBtn = Instance.new("TextButton")
-            DelBtn.Size = UDim2.new(0, 30, 0, 30)
-            DelBtn.Position = UDim2.new(1, -40, 0.5, -15)
-            DelBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-            DelBtn.BackgroundTransparency = 0.5
-            DelBtn.Text = "×"
-            DelBtn.TextColor3 = Colors.White
-            DelBtn.Font = Enum.Font.GothamBold
-            DelBtn.TextSize = 20
-            DelBtn.Parent = QCard
-            Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0, 6)
-
-            DelBtn.MouseButton1Click:Connect(function()
-                table.remove(_G.Axomusc_Queue, i)
-                if i < _G.Axomusc_CurrentIndex then
-                    _G.Axomusc_CurrentIndex = _G.Axomusc_CurrentIndex - 1
-                end
-                _G.Axomusc_RefreshPlaylistUI()
-            end)
-        end
-    end
-    _G.Axomusc_RefreshPlaylistUI()
-
-
-    -- ==============================================================================
-    -- [5] RESPONSIVE SLIDING QUEUE PANEL (DI MUSIC PAGE - ANTI TABRAKAN)
-    -- ==============================================================================
-    local MasterMusicContainer = _G.Page_Music.Page:FindFirstChild("Music_Master_Container")
-    local VisualizerWrapper = MasterMusicContainer:FindFirstChild("Visualizer_Wrapper")
-    
-    if MasterMusicContainer and VisualizerWrapper then
-        
-        -- Panel Sliding di Kanan
-        local SlidingPanel = Instance.new("Frame")
-        SlidingPanel.Name = "Sliding_Queue_Panel"
-        SlidingPanel.Size = UDim2.new(0.4, 0, 0.8, -20)
-        SlidingPanel.Position = UDim2.new(1, 20, 0.1, 0) -- Hidden di kanan
-        SlidingPanel.BackgroundColor3 = Colors.Black
-        SlidingPanel.BackgroundTransparency = 0.3
-        SlidingPanel.BorderSizePixel = 0
-        SlidingPanel.ZIndex = 5
-        SlidingPanel.Parent = MasterMusicContainer
-        
-        Instance.new("UICorner", SlidingPanel).CornerRadius = UDim.new(0, 12)
-        local Stroke = Instance.new("UIStroke", SlidingPanel)
-        Stroke.Color = Colors.ToscaGreen
-        Stroke.Transparency = 0.5
-
-        -- Header Sliding Panel
-        local PHeader = Instance.new("TextLabel")
-        PHeader.Size = UDim2.new(1, 0, 0, 35)
-        PHeader.BackgroundTransparency = 1
-        PHeader.Text = "Up Next"
-        PHeader.TextColor3 = Colors.IceBlue
-        PHeader.Font = Enum.Font.GothamBold
-        PHeader.TextSize = 14
-        PHeader.Parent = SlidingPanel
-
-        -- Clone content dari Playlist UI (Sinkronisasi Visual)
-        local MiniQueueList = Instance.new("ScrollingFrame")
-        MiniQueueList.Size = UDim2.new(1, -10, 1, -45)
-        MiniQueueList.Position = UDim2.new(0, 5, 0, 40)
-        MiniQueueList.BackgroundTransparency = 1
-        MiniQueueList.ScrollBarThickness = 2
-        MiniQueueList.Parent = SlidingPanel
-        
-        local MiniLayout = Instance.new("UIListLayout")
-        MiniLayout.SortOrder = Enum.SortOrder.LayoutOrder
-        MiniLayout.Padding = UDim.new(0, 5)
-        MiniLayout.Parent = MiniQueueList
-
-        -- Tombol Toggle Panel
-        local ToggleQueueBtn = Instance.new("TextButton")
-        ToggleQueueBtn.Size = UDim2.new(0, 40, 0, 40)
-        ToggleQueueBtn.Position = UDim2.new(1, -50, 0, 10)
-        ToggleQueueBtn.BackgroundColor3 = Colors.DarkBlue
-        ToggleQueueBtn.BackgroundTransparency = 0.2
-        ToggleQueueBtn.Text = "☰"
-        ToggleQueueBtn.TextColor3 = Colors.White
-        ToggleQueueBtn.Font = Enum.Font.GothamBold
-        ToggleQueueBtn.TextSize = 18
-        ToggleQueueBtn.ZIndex = 10
-        ToggleQueueBtn.Parent = MasterMusicContainer
-        Instance.new("UICorner", ToggleQueueBtn).CornerRadius = UDim.new(0, 8)
-        Instance.new("UIStroke", ToggleQueueBtn).Color = Colors.IceBlue
-        
-        local PanelOpen = false
-        ToggleQueueBtn.MouseButton1Click:Connect(function()
-            PanelOpen = not PanelOpen
-            if PanelOpen then
-                -- Animasi Anti-Tabrakan: Geser Visualizer ke Kiri, Panel masuk ke Kanan
-                CreateTween(VisualizerWrapper, 0.4, {Position = UDim2.new(0.3, 0, 0.5, 0)})
-                CreateTween(SlidingPanel, 0.4, {Position = UDim2.new(0.58, 0, 0.1, 0)})
-                ToggleQueueBtn.Text = "×"
-                ToggleQueueBtn.TextColor3 = Colors.ToscaGreen
-                
-                -- Update Mini Queue Content
-                for _, c in pairs(MiniQueueList:GetChildren()) do if c:IsA("TextLabel") then c:Destroy() end end
-                for i, song in ipairs(_G.Axomusc_Queue) do
-                    local isPlaying = (i == _G.Axomusc_CurrentIndex)
-                    local lbl = Instance.new("TextLabel")
-                    lbl.Size = UDim2.new(1, 0, 0, 25)
-                    lbl.BackgroundTransparency = 1
-                    lbl.Text = i .. ". " .. song.Title
-                    lbl.TextColor3 = isPlaying and Colors.ToscaGreen or Colors.White
-                    lbl.Font = isPlaying and Enum.Font.GothamBold or Enum.Font.Gotham
-                    lbl.TextSize = 12
-                    lbl.TextXAlignment = Enum.TextXAlignment.Left
-                    lbl.Parent = MiniQueueList
-                end
-                MiniQueueList.CanvasSize = UDim2.new(0, 0, 0, #_G.Axomusc_Queue * 30)
-            else
-                -- Kembalikan Visualizer ke Tengah
-                CreateTween(VisualizerWrapper, 0.4, {Position = UDim2.new(0.5, 0, 0.5, 0)})
-                CreateTween(SlidingPanel, 0.4, {Position = UDim2.new(1, 20, 0.1, 0)})
-                ToggleQueueBtn.Text = "☰"
-                ToggleQueueBtn.TextColor3 = Colors.White
-            end
-        end)
-    end
-
-
-    -- ==============================================================================
-    -- [6] SINKRONISASI ENGINE TAHAP 1 (AUTO-NEXT LOGIC)
-    -- ==============================================================================
-    _G.Axomusc_PlayNextFromPlaylist = function()
-        if #_G.Axomusc_Queue == 0 then return end
-        
-        -- Maju ke lagu berikutnya, jika habis kembali ke lagu pertama (Loop Queue)
-        _G.Axomusc_CurrentIndex = _G.Axomusc_CurrentIndex + 1
-        if _G.Axomusc_CurrentIndex > #_G.Axomusc_Queue then
-            _G.Axomusc_CurrentIndex = 1 
-        end
-        
-        local nextSong = _G.Axomusc_Queue[_G.Axomusc_CurrentIndex]
-        if nextSong and _G.Axomusc_PlaySong then
-            _G.Axomusc_PlaySong(nextSong.ID, nextSong.Title, nextSong.Artist)
-            
-            if _G.Axomusc_Notify then
-                _G.Axomusc_Notify("Auto-Next", "Memutar: " .. nextSong.Title, 2.5)
-            end
-            
-            _G.Axomusc_RefreshPlaylistUI()
-        end
-    end
-
-    -- Hook tombot NEXT / PREV dari Tahap 1 ke sistem Playlist ini
-    local ControlPanel = MasterMusicContainer:FindFirstChild("Control_Panel")
-    if ControlPanel then
-        local BtnNext = ControlPanel:FindFirstChild("Btn_Next")
-        local BtnPrev = ControlPanel:FindFirstChild("Btn_Prev")
-        
-        if BtnNext then
-            BtnNext.MouseButton1Click:Connect(function()
-                _G.Axomusc_PlayNextFromPlaylist()
-            end)
-        end
-        
-        if BtnPrev then
-            BtnPrev.MouseButton1Click:Connect(function()
-                if #_G.Axomusc_Queue == 0 then return end
-                _G.Axomusc_CurrentIndex = _G.Axomusc_CurrentIndex - 1
-                if _G.Axomusc_CurrentIndex < 1 then
-                    _G.Axomusc_CurrentIndex = #_G.Axomusc_Queue
-                end
-                
-                local prevSong = _G.Axomusc_Queue[_G.Axomusc_CurrentIndex]
-                if prevSong and _G.Axomusc_PlaySong then
-                    _G.Axomusc_PlaySong(prevSong.ID, prevSong.Title, prevSong.Artist)
-                    _G.Axomusc_RefreshPlaylistUI()
-                end
-            end)
-        end
-    end
-
 end)
-
-if not Tahap2_Success then 
-    warn("[Axomusc Premium] Tahap 2 Gagal Dimuat: " .. tostring(Tahap2_Error)) 
-else
-    print("[Axomusc Premium] Tahap 2 Berhasil Dimuat (Folder, Playlist & Auto-Next Aktif!)")
-end
