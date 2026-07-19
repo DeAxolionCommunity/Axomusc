@@ -661,3 +661,196 @@ SwitchMenuCategory("Main")
 H_Line1.BackgroundColor3 = Config.Colors.ToscaGreen
 H_Line2.BackgroundColor3 = Config.Colors.ToscaGreen
 H_Line3.BackgroundColor3 = Config.Colors.ToscaGreen
+
+-- ==============================================================================
+-- BAGIAN 3: PENGISIAN KONTEN UI (MASING-MASING MENU)
+-- ==============================================================================
+
+-- [1] Helper Functions untuk membuat UI Element yang seragam dan mewah
+local function CreateTitle(Parent, Text)
+    local Title = Instance.new("TextLabel", Parent)
+    Title.Size = UDim2.new(1, 0, 0, 30)
+    Title.BackgroundTransparency = 1
+    Title.Text = Text
+    Title.TextColor3 = Config.Colors.IceBlue
+    Title.Font = Enum.Font.GothamBold
+    Title.TextSize = 16
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    return Title
+end
+
+local function CreateTextBox(Parent, Placeholder)
+    local Box = Instance.new("TextBox", Parent)
+    Box.Size = UDim2.new(1, 0, 0, 40)
+    Box.BackgroundColor3 = Config.Colors.DarkBlue
+    Box.BackgroundTransparency = 0.3
+    Box.Text = ""
+    Box.PlaceholderText = Placeholder
+    Box.TextColor3 = Config.Colors.White
+    Box.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    Box.Font = Enum.Font.Gotham
+    Box.TextSize = 14
+    
+    Instance.new("UICorner", Box).CornerRadius = UDim.new(0, 8)
+    
+    local Stroke = Instance.new("UIStroke", Box)
+    Stroke.Color = Config.Colors.ToscaGreen
+    Stroke.Transparency = 0.5
+    Stroke.Thickness = 1
+    
+    return Box
+end
+
+local function CreateButton(Parent, Text, Color)
+    local Btn = Instance.new("TextButton", Parent)
+    Btn.Size = UDim2.new(1, 0, 0, 40)
+    Btn.BackgroundColor3 = Color or Config.Colors.DarkBlue
+    Btn.Text = Text
+    Btn.TextColor3 = Config.Colors.White
+    Btn.Font = Enum.Font.GothamBold
+    Btn.TextSize = 14
+    Btn.AutoButtonColor = false
+    
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 8)
+    
+    Btn.MouseEnter:Connect(function()
+        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 0.2}):Play()
+    end)
+    Btn.MouseLeave:Connect(function()
+        TweenService:Create(Btn, TweenInfo.new(0.2), {BackgroundTransparency = 0}):Play()
+    end)
+    
+    return Btn
+end
+
+-- ================= MENGISI KONTEN: PAGE MUSIC PANEL =================
+local MusicPage = Page_Music.Page
+CreateTitle(MusicPage, "Now Playing")
+
+local MusicStatus = Instance.new("TextLabel", MusicPage)
+MusicStatus.Size = UDim2.new(1, 0, 0, 20)
+MusicStatus.BackgroundTransparency = 1
+MusicStatus.Text = "Status: Idle"
+MusicStatus.TextColor3 = Config.Colors.ToscaGreen
+MusicStatus.Font = Enum.Font.Gotham
+MusicStatus.TextSize = 13
+MusicStatus.TextXAlignment = Enum.TextXAlignment.Left
+
+CreateTitle(MusicPage, "Audio Controller")
+local AudioInput = CreateTextBox(MusicPage, "Masukkan ID Audio Roblox di sini...")
+local PlayBtn = CreateButton(MusicPage, "▶ Play Audio", Config.Colors.DarkBlue)
+local StopBtn = CreateButton(MusicPage, "⏹ Stop Audio", Color3.fromRGB(180, 40, 40))
+
+-- ================= MENGISI KONTEN: PAGE PLAYLIST =================
+local PlaylistPage = Page_Playlist.Page
+CreateTitle(PlaylistPage, "Saved Playlists")
+
+local function CreateSongCard(TitleStr, IDStr)
+    local Card = Instance.new("Frame", PlaylistPage)
+    Card.Size = UDim2.new(1, 0, 0, 50)
+    Card.BackgroundColor3 = Config.Colors.DarkBlue
+    Card.BackgroundTransparency = 0.5
+    Instance.new("UICorner", Card).CornerRadius = UDim.new(0, 8)
+    
+    local Lbl = Instance.new("TextLabel", Card)
+    Lbl.Size = UDim2.new(1, -60, 1, 0)
+    Lbl.Position = UDim2.new(0, 15, 0, 0)
+    Lbl.BackgroundTransparency = 1
+    Lbl.Text = TitleStr .. "\n<font size='11' color='#A0A0A0'>ID: " .. IDStr .. "</font>"
+    Lbl.TextColor3 = Config.Colors.White
+    Lbl.RichText = true
+    Lbl.Font = Enum.Font.GothamSemibold
+    Lbl.TextSize = 14
+    Lbl.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local LoadBtn = Instance.new("TextButton", Card)
+    LoadBtn.Size = UDim2.new(0, 40, 0, 30)
+    LoadBtn.Position = UDim2.new(1, -50, 0.5, -15)
+    LoadBtn.BackgroundColor3 = Config.Colors.ToscaGreen
+    LoadBtn.Text = "Load"
+    LoadBtn.TextColor3 = Config.Colors.Black
+    LoadBtn.Font = Enum.Font.GothamBold
+    LoadBtn.TextSize = 12
+    Instance.new("UICorner", LoadBtn).CornerRadius = UDim.new(0, 6)
+end
+
+CreateSongCard("Axolion Theme Song", "1234567890")
+CreateSongCard("Chill Vibes", "0987654321")
+
+-- ================= MENGISI KONTEN: PAGE FOLDER =================
+local FolderPage = Page_Folder.Page
+CreateTitle(FolderPage, "Local Music Folders")
+local FolderInfo = Instance.new("TextLabel", FolderPage)
+FolderInfo.Size = UDim2.new(1, 0, 0, 40)
+FolderInfo.BackgroundTransparency = 1
+FolderInfo.Text = "Fitur ini masih dalam tahap pengembangan (Beta). Nantinya Anda bisa menyimpan kategori musik di sini."
+FolderInfo.TextColor3 = Config.Colors.White
+FolderInfo.TextTransparency = 0.4
+FolderInfo.Font = Enum.Font.Gotham
+FolderInfo.TextSize = 12
+FolderInfo.TextWrapped = true
+FolderInfo.TextXAlignment = Enum.TextXAlignment.Left
+
+-- ================= MENGISI KONTEN: PAGE PROFILE =================
+local ProfilePage = Page_Profile.Page
+CreateTitle(ProfilePage, "User Profile")
+
+local AvatarImg = Instance.new("ImageLabel", ProfilePage)
+AvatarImg.Size = UDim2.new(0, 80, 0, 80)
+AvatarImg.BackgroundColor3 = Config.Colors.DarkBlue
+AvatarImg.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. LocalPlayer.UserId .. "&width=420&height=420&format=png"
+Instance.new("UICorner", AvatarImg).CornerRadius = UDim.new(1, 0) -- Lingkaran
+
+local UserInfo = Instance.new("TextLabel", ProfilePage)
+UserInfo.Size = UDim2.new(1, 0, 0, 50)
+UserInfo.BackgroundTransparency = 1
+UserInfo.Text = "Username: " .. LocalPlayer.Name .. "\nDisplay Name: " .. LocalPlayer.DisplayName
+UserInfo.TextColor3 = Config.Colors.White
+UserInfo.Font = Enum.Font.GothamSemibold
+UserInfo.TextSize = 14
+UserInfo.TextXAlignment = Enum.TextXAlignment.Left
+
+-- ================= MENGISI KONTEN: PAGE ABOUT =================
+local AboutPage = Page_About.Page
+CreateTitle(AboutPage, "About Axolion")
+
+local BrandLogo = Instance.new("ImageLabel", AboutPage)
+BrandLogo.Size = UDim2.new(0, 100, 0, 100)
+BrandLogo.BackgroundTransparency = 1
+BrandLogo.Image = Config.MainLogo
+BrandLogo.ImageColor3 = Config.Colors.White
+
+local AboutText = Instance.new("TextLabel", AboutPage)
+AboutText.Size = UDim2.new(1, 0, 0, 80)
+AboutText.BackgroundTransparency = 1
+AboutText.Text = "Axolion Community Script Hub\nVersi: Beta\n\nKomunitas Roblox Delta Script terbaik dengan antarmuka premium."
+AboutText.TextColor3 = Config.Colors.White
+AboutText.Font = Enum.Font.Gotham
+AboutText.TextSize = 13
+AboutText.TextXAlignment = Enum.TextXAlignment.Left
+AboutText.TextYAlignment = Enum.TextYAlignment.Top
+
+local DiscordBtn = CreateButton(AboutPage, "🌐 Join Discord", Color3.fromRGB(88, 101, 242))
+DiscordBtn.MouseButton1Click:Connect(function() setclipboard(Config.Discord) App.Notify("Berhasil", "Link Discord disalin ke clipboard!", 3) end)
+
+local GroupBtn = CreateButton(AboutPage, "🔗 Join Roblox Group", Config.Colors.ToscaGreen)
+GroupBtn.TextColor3 = Config.Colors.Black
+GroupBtn.MouseButton1Click:Connect(function() setclipboard(Config.RobloxGroup) App.Notify("Berhasil", "Link Group disalin ke clipboard!", 3) end)
+
+-- ================= MENGISI KONTEN: PAGE UP INFO =================
+local UpInfoPage = Page_UpInfo.Page
+CreateTitle(UpInfoPage, "Update Logs")
+
+local UpdateLog = Instance.new("TextLabel", UpInfoPage)
+UpdateLog.Size = UDim2.new(1, 0, 0, 150)
+UpdateLog.BackgroundColor3 = Config.Colors.DarkBlue
+UpdateLog.BackgroundTransparency = 0.5
+UpdateLog.Text = "[+] Initial Release Axolion Beta\n[+] Added Premium UI Layout\n[+] Added 3-Screen Dynamic Panel\n[+] Added Music Controller System\n[!] Bug fix auto-scale resolusi\n[!] Optimalisasi render UI"
+UpdateLog.TextColor3 = Config.Colors.White
+UpdateLog.Font = Enum.Font.Gotham
+UpdateLog.TextSize = 13
+UpdateLog.TextXAlignment = Enum.TextXAlignment.Left
+UpdateLog.TextYAlignment = Enum.TextYAlignment.Top
+Instance.new("UICorner", UpdateLog).CornerRadius = UDim.new(0, 8)
+local Pad = Instance.new("UIPadding", UpdateLog)
+Pad.PaddingTop = UDim.new(0, 10) Pad.PaddingLeft = UDim.new(0, 10)
