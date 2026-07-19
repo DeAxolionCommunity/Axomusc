@@ -663,7 +663,7 @@ H_Line2.BackgroundColor3 = Config.Colors.ToscaGreen
 H_Line3.BackgroundColor3 = Config.Colors.ToscaGreen
 
 -- ==============================================================================
--- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 1 - MUSIC PANEL ELEGANT FIXED)
+-- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 1 - MUSIC PANEL ELEGANT FIX)
 -- ==============================================================================
 
 local MusicPage = Page_Music.Page
@@ -672,7 +672,7 @@ local MusicPage = Page_Music.Page
 App.MusicQueue = {}
 App.CurrentTrackIndex = 0
 App.IsPlaying = false
-App.PlayMode = 1 -- 1: Auto Next (Normal), 2: Repeat One, 3: Shuffle
+App.PlayMode = 1 -- 1: Auto Next, 2: Repeat One, 3: Shuffle
 
 local AudioCore = Instance.new("Sound")
 AudioCore.Name = "Axomusc_AudioEngine"
@@ -693,6 +693,20 @@ local CardStroke = Instance.new("UIStroke", NowPlayingCard)
 CardStroke.Color = Config.Colors.ToscaGreen
 CardStroke.Transparency = 0.6
 CardStroke.Thickness = 1.5
+
+-- Tombol Garis 3 (Daftar Putar) di dalam Container Now Playing
+local BtnQueue = Instance.new("TextButton", NowPlayingCard)
+BtnQueue.Size = UDim2.new(0, 35, 0, 35)
+BtnQueue.Position = UDim2.new(1, -45, 0, 15)
+BtnQueue.BackgroundColor3 = Config.Colors.Black
+BtnQueue.BackgroundTransparency = 0.3
+BtnQueue.Text = "≡"
+BtnQueue.TextColor3 = Config.Colors.White
+BtnQueue.Font = Enum.Font.GothamBold
+BtnQueue.TextSize = 20
+BtnQueue.ZIndex = 4
+Instance.new("UICorner", BtnQueue).CornerRadius = UDim.new(0, 8)
+Instance.new("UIStroke", BtnQueue).Color = Config.Colors.ToscaGreen
 
 -- Album Art / CD
 local AlbumBg = Instance.new("Frame", NowPlayingCard)
@@ -740,7 +754,7 @@ BassGradient.Color = ColorSequence.new{
 
 -- Text Info
 local SongTitle = Instance.new("TextLabel", NowPlayingCard)
-SongTitle.Size = UDim2.new(1, -160, 0, 30)
+SongTitle.Size = UDim2.new(1, -210, 0, 30) -- Disesuaikan agar tidak nabrak tombol garis 3
 SongTitle.Position = UDim2.new(0, 150, 0, 25)
 SongTitle.BackgroundTransparency = 1
 SongTitle.Text = "No Track Selected"
@@ -752,7 +766,7 @@ SongTitle.TextTruncate = Enum.TextTruncate.AtEnd
 SongTitle.ZIndex = 3
 
 local SongArtist = Instance.new("TextLabel", NowPlayingCard)
-SongArtist.Size = UDim2.new(1, -160, 0, 20)
+SongArtist.Size = UDim2.new(1, -210, 0, 20)
 SongArtist.Position = UDim2.new(0, 150, 0, 55)
 SongArtist.BackgroundTransparency = 1
 SongArtist.Text = "Axolion Community"
@@ -764,7 +778,7 @@ SongArtist.ZIndex = 3
 
 -- Progress Slider Premium
 local ProgressContainer = Instance.new("Frame", NowPlayingCard)
-ProgressContainer.Size = UDim2.new(1, -160, 0, 25)
+ProgressContainer.Size = UDim2.new(1, -165, 0, 25)
 ProgressContainer.Position = UDim2.new(0, 150, 0, 100)
 ProgressContainer.BackgroundTransparency = 1
 ProgressContainer.ZIndex = 3
@@ -786,8 +800,8 @@ ProgressFill.ZIndex = 3
 Instance.new("UICorner", ProgressFill).CornerRadius = UDim.new(1, 0)
 
 local ProgressKnob = Instance.new("Frame", ProgressFill)
-ProgressKnob.Size = UDim2.new(0, 10, 0, 10)
-ProgressKnob.Position = UDim2.new(1, -5, 0.5, 0)
+ProgressKnob.Size = UDim2.new(0, 12, 0, 12)
+ProgressKnob.Position = UDim2.new(1, -6, 0.5, 0)
 ProgressKnob.AnchorPoint = Vector2.new(0.5, 0.5)
 ProgressKnob.BackgroundColor3 = Config.Colors.White
 ProgressKnob.ZIndex = 4
@@ -795,23 +809,23 @@ Instance.new("UICorner", ProgressKnob).CornerRadius = UDim.new(1, 0)
 
 local TimeCurrent = Instance.new("TextLabel", ProgressContainer)
 TimeCurrent.Size = UDim2.new(0, 50, 0, 15)
-TimeCurrent.Position = UDim2.new(0, 0, 1, 0)
+TimeCurrent.Position = UDim2.new(0, 0, 1, 2)
 TimeCurrent.BackgroundTransparency = 1
 TimeCurrent.Text = "0:00"
 TimeCurrent.TextColor3 = Config.Colors.White
 TimeCurrent.Font = Enum.Font.Gotham
-TimeCurrent.TextSize = 10
+TimeCurrent.TextSize = 11
 TimeCurrent.TextXAlignment = Enum.TextXAlignment.Left
 TimeCurrent.ZIndex = 3
 
 local TimeTotal = Instance.new("TextLabel", ProgressContainer)
 TimeTotal.Size = UDim2.new(0, 50, 0, 15)
-TimeTotal.Position = UDim2.new(1, -50, 1, 0)
+TimeTotal.Position = UDim2.new(1, -50, 1, 2)
 TimeTotal.BackgroundTransparency = 1
 TimeTotal.Text = "0:00"
 TimeTotal.TextColor3 = Config.Colors.White
 TimeTotal.Font = Enum.Font.Gotham
-TimeTotal.TextSize = 10
+TimeTotal.TextSize = 11
 TimeTotal.TextXAlignment = Enum.TextXAlignment.Right
 TimeTotal.ZIndex = 3
 
@@ -830,22 +844,25 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- ================= SUB PART: MAIN CONTROL PANEL =================
+-- ================= SUB PART: MAIN CONTROL PANEL (LEBIH BESAR) =================
 local ControlPanel = Instance.new("Frame", MusicPage)
-ControlPanel.Size = UDim2.new(1, 0, 0, 60)
+ControlPanel.Size = UDim2.new(1, 0, 0, 85) -- Jauh lebih tinggi
 ControlPanel.Position = UDim2.new(0, 0, 0, 165)
 ControlPanel.BackgroundColor3 = Config.Colors.Black
-ControlPanel.BackgroundTransparency = 0.5
+ControlPanel.BackgroundTransparency = 0.4
+ControlPanel.ClipsDescendants = true -- Penting agar isi menghilang saat size Y=0
 ControlPanel.ZIndex = 2
 Instance.new("UICorner", ControlPanel).CornerRadius = UDim.new(0, 12)
+local ControlStroke = Instance.new("UIStroke", ControlPanel)
+ControlStroke.Color = Config.Colors.ToscaGreen
+ControlStroke.Transparency = 0.7
 
--- FIX: Mengganti SpaceEvenly menjadi Center dan menambahkan Padding
 local CtrlLayout = Instance.new("UIListLayout", ControlPanel)
 CtrlLayout.FillDirection = Enum.FillDirection.Horizontal
 CtrlLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center 
 CtrlLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 CtrlLayout.SortOrder = Enum.SortOrder.LayoutOrder
-CtrlLayout.Padding = UDim.new(0, 10) 
+CtrlLayout.Padding = UDim.new(0, 18) -- Jarak antar tombol diperlebar
 
 local function CreateCtrlBtn(name, text, size, txtSize, order, isMain)
     local btn = Instance.new("TextButton", ControlPanel)
@@ -853,7 +870,7 @@ local function CreateCtrlBtn(name, text, size, txtSize, order, isMain)
     btn.Size = UDim2.new(0, size, 0, size)
     btn.LayoutOrder = order
     btn.BackgroundColor3 = isMain and Config.Colors.ToscaGreen or Config.Colors.DarkBlue
-    btn.BackgroundTransparency = isMain and 0 or 0.3
+    btn.BackgroundTransparency = isMain and 0 or 0.2
     btn.Text = text
     btn.TextColor3 = isMain and Config.Colors.Black or Config.Colors.White
     btn.Font = Enum.Font.GothamBold
@@ -865,26 +882,26 @@ local function CreateCtrlBtn(name, text, size, txtSize, order, isMain)
     if not isMain then
         local stroke = Instance.new("UIStroke", btn)
         stroke.Color = Config.Colors.White
-        stroke.Transparency = 0.8
+        stroke.Transparency = 0.6
+        stroke.Thickness = 1.5
     end
     
-    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, size+4, 0, size+4)}):Play() end)
+    btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, size+5, 0, size+5)}):Play() end)
     btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, size, 0, size)}):Play() end)
     return btn
 end
 
--- Posisi dan urutan diubah sesuai request
-local BtnQueue    = CreateCtrlBtn("BtnQueue", "≡", 35, 16, 1, false)
-local BtnTempo    = CreateCtrlBtn("BtnTempo", "⏱", 35, 14, 2, false)
-local BtnPrev     = CreateCtrlBtn("BtnPrev", "⏮", 40, 16, 3, false)
-local BtnPlay     = CreateCtrlBtn("BtnPlay", "▶", 50, 22, 4, true)
-local BtnNext     = CreateCtrlBtn("BtnNext", "⏭", 40, 16, 5, false)
-local BtnPlayMode = CreateCtrlBtn("BtnPlayMode", "🔁", 35, 14, 6, false)
+-- Urutan dan Ukuran Diperbesar sesuai prompt
+local BtnTempo    = CreateCtrlBtn("BtnTempo", "⏱", 45, 18, 1, false)
+local BtnPrev     = CreateCtrlBtn("BtnPrev", "⏮", 50, 22, 2, false)
+local BtnPlay     = CreateCtrlBtn("BtnPlay", "▶", 65, 28, 3, true)
+local BtnNext     = CreateCtrlBtn("BtnNext", "⏭", 50, 22, 4, false)
+local BtnPlayMode = CreateCtrlBtn("BtnPlayMode", "🔁", 45, 18, 5, false)
 
 -- ================= SUB PART: FLOATING TEMPO PANEL =================
 local TempoContainer = Instance.new("Frame", MusicPage)
 TempoContainer.Size = UDim2.new(0, 200, 0, 45)
-TempoContainer.Position = UDim2.new(0.5, -100, 0, 110) -- Melayang (floating) elegan
+TempoContainer.Position = UDim2.new(0.5, -100, 0, 110)
 TempoContainer.BackgroundColor3 = Config.Colors.DarkBlue
 TempoContainer.BackgroundTransparency = 0.1
 TempoContainer.ClipsDescendants = true
@@ -893,7 +910,6 @@ TempoContainer.ZIndex = 10
 Instance.new("UICorner", TempoContainer).CornerRadius = UDim.new(0, 10)
 Instance.new("UIStroke", TempoContainer).Color = Config.Colors.ToscaGreen
 
--- FIX: Mengganti SpaceEvenly menjadi Center dan menambahkan Padding
 local TmpLayout = Instance.new("UIListLayout", TempoContainer)
 TmpLayout.FillDirection = Enum.FillDirection.Horizontal
 TmpLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
@@ -941,7 +957,7 @@ end)
 -- ================= SUB PART: QUEUE PLAYLIST CONTAINER =================
 local QueueContainer = Instance.new("Frame", MusicPage)
 QueueContainer.Size = UDim2.new(1, 0, 0, 0)
-QueueContainer.Position = UDim2.new(0, 0, 0, 235)
+QueueContainer.Position = UDim2.new(0, 0, 0, 165) -- Sama posisinya dengan ControlPanel
 QueueContainer.BackgroundColor3 = Config.Colors.DarkBlue
 QueueContainer.BackgroundTransparency = 0.2
 QueueContainer.ClipsDescendants = true
@@ -961,14 +977,28 @@ local QLayout = Instance.new("UIListLayout", QueueScroll)
 QLayout.SortOrder = Enum.SortOrder.LayoutOrder
 QLayout.Padding = UDim.new(0, 6)
 
+-- LOGIKA TOGGLE MENU DAFTAR PUTAR DAN HILANGKAN PANEL KONTROL
+local IsQueueOpen = false
 BtnQueue.MouseButton1Click:Connect(function()
-    if QueueContainer.Size.Y.Offset > 0 or QueueContainer.Size.Y.Scale > 0 then
-        TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 0)}):Play()
-        QStroke.Transparency = 1
-    else
+    IsQueueOpen = not IsQueueOpen
+    if IsQueueOpen then
+        BtnQueue.BackgroundColor3 = Config.Colors.ToscaGreen
+        BtnQueue.TextColor3 = Config.Colors.Black
         QStroke.Transparency = 0
-        -- Meluas ke sisa ruangan bawah
-        TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, -240)}):Play()
+        -- Sembunyikan Control Panel
+        TweenService:Create(ControlPanel, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 0), BackgroundTransparency = 1}):Play()
+        ControlStroke.Transparency = 1
+        -- Munculkan Daftar Putar mengisi penuh bagian bawah
+        TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, -170)}):Play()
+    else
+        BtnQueue.BackgroundColor3 = Config.Colors.Black
+        BtnQueue.TextColor3 = Config.Colors.White
+        QStroke.Transparency = 1
+        -- Sembunyikan Daftar Putar
+        TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 0)}):Play()
+        -- Munculkan kembali Control Panel ke ukuran semula
+        TweenService:Create(ControlPanel, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 85), BackgroundTransparency = 0.4}):Play()
+        ControlStroke.Transparency = 0.7
     end
 end)
 
