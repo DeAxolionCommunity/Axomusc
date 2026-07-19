@@ -140,13 +140,13 @@ function App.Notify(Title, Text, Duration)
 end
 
 -- ================= SUB PART: MAIN CANVAS & DYNAMIC AUTO-SCALE =================
-local MainFrame = Instance.new("Frame")
+local MainFrame = Instance.new("Frame", AxomuscUI)
 MainFrame.Name = "MainCanvas_Workspace"
 MainFrame.Size = UDim2.new(0, 680, 0, 460)
-MainFrame.Position = UDim2.new(0.5, -340, 0.5, -230)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0) -- Menempatkan titik tengah frame ke tengah layar
+MainFrame.AnchorPoint = Vector2.new(0.5, 0.5) -- Mengatur titik poros ke tengah frame
 MainFrame.BackgroundColor3 = Config.Colors.Black
 MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = false 
 MainFrame.Active = true
 MainFrame.Parent = AxomuscUI
 
@@ -230,6 +230,49 @@ UserInputService.InputChanged:Connect(function(input)
         local delta = input.Position - dragStart
         local targetPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
         TweenService:Create(MainFrame, TweenInfo.new(0.15, Config.UI_Settings.EasingStyle, Config.UI_Settings.EasingDirection), {Position = targetPos}):Play()
+    end
+end)
+
+-- ================= SUB PART: RESIZE FEATURE =================
+local ResizeBtn = Instance.new("TextButton", MainFrame)
+ResizeBtn.Name = "ResizeButton"
+ResizeBtn.Size = UDim2.new(0, 20, 0, 20)
+ResizeBtn.Position = UDim2.new(1, -20, 1, -20)
+ResizeBtn.BackgroundTransparency = 1
+ResizeBtn.Text = "◢" -- Simbol visual untuk resize
+ResizeBtn.TextColor3 = Config.Colors.White
+ResizeBtn.TextSize = 15
+ResizeBtn.ZIndex = 10
+
+local resizing = false
+local resizeStartSize
+local resizeStartMousePos
+
+ResizeBtn.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        resizing = true
+        resizeStartSize = MainFrame.Size
+        resizeStartMousePos = input.Position
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if resizing then
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            local delta = input.Position - resizeStartMousePos
+            
+            -- Hitung ukuran baru (minimal 300x200 agar tidak hilang)
+            local newX = math.max(300, resizeStartSize.X.Offset + delta.X)
+            local newY = math.max(200, resizeStartSize.Y.Offset + delta.Y)
+            
+            MainFrame.Size = UDim2.new(0, newX, 0, newY)
+        end
+    end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        resizing = false
     end
 end)
 
