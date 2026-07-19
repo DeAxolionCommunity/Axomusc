@@ -663,143 +663,157 @@ H_Line2.BackgroundColor3 = Config.Colors.ToscaGreen
 H_Line3.BackgroundColor3 = Config.Colors.ToscaGreen
 
 -- ==============================================================================
--- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 1 - MUSIC PANEL PREMIUM & FIXED)
+-- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 1 - MUSIC PANEL ELEGANT)
 -- ==============================================================================
 
 local MusicPage = Page_Music.Page
 
--- ================= SUB PART: AUDIO ENGINE & QUEUE SYSTEM =================
+-- ================= SUB PART: AUDIO ENGINE & SYSTEM STATE =================
 App.MusicQueue = {}
 App.CurrentTrackIndex = 0
 App.IsPlaying = false
-App.IsShuffle = false
-App.IsRepeat = false
+App.PlayMode = 1 -- 1: Auto Next (Normal), 2: Repeat One, 3: Shuffle
 
 local AudioCore = Instance.new("Sound")
-AudioCore.Name = "Axomusc_AudioEngine_Main"
+AudioCore.Name = "Axomusc_AudioEngine"
 AudioCore.Parent = CoreGui
 AudioCore.Volume = 1
 AudioCore.Looped = false
 
--- ================= SUB PART: NOW PLAYING & VISUALIZER =================
+-- ================= SUB PART: NOW PLAYING CARD =================
 local NowPlayingCard = Instance.new("Frame", MusicPage)
 NowPlayingCard.Name = "NowPlaying_Card"
-NowPlayingCard.Size = UDim2.new(1, 0, 0, 160)
+NowPlayingCard.Size = UDim2.new(1, 0, 0, 150)
 NowPlayingCard.BackgroundColor3 = Config.Colors.DarkBlue
-NowPlayingCard.BackgroundTransparency = 0.2
+NowPlayingCard.BackgroundTransparency = 0.1
 NowPlayingCard.BorderSizePixel = 0
-Instance.new("UICorner", NowPlayingCard).CornerRadius = UDim.new(0, 12)
-Instance.new("UIStroke", NowPlayingCard).Color = Config.Colors.IceBlue
-Instance.new("UIStroke", NowPlayingCard).Transparency = 0.5
+NowPlayingCard.ZIndex = 2
+Instance.new("UICorner", NowPlayingCard).CornerRadius = UDim.new(0, 15)
+local CardStroke = Instance.new("UIStroke", NowPlayingCard)
+CardStroke.Color = Config.Colors.ToscaGreen
+CardStroke.Transparency = 0.6
+CardStroke.Thickness = 1.5
 
-local AlbumCD_Bg = Instance.new("Frame", NowPlayingCard)
-AlbumCD_Bg.Size = UDim2.new(0, 120, 0, 120)
-AlbumCD_Bg.Position = UDim2.new(0, 20, 0.5, 0)
-AlbumCD_Bg.AnchorPoint = Vector2.new(0, 0.5)
-AlbumCD_Bg.BackgroundColor3 = Config.Colors.Black
-Instance.new("UICorner", AlbumCD_Bg).CornerRadius = UDim.new(1, 0)
-local CDStroke = Instance.new("UIStroke", AlbumCD_Bg)
-CDStroke.Color = Config.Colors.White
-CDStroke.Thickness = 2
+-- Album Art / CD
+local AlbumBg = Instance.new("Frame", NowPlayingCard)
+AlbumBg.Size = UDim2.new(0, 110, 0, 110)
+AlbumBg.Position = UDim2.new(0, 20, 0.5, 0)
+AlbumBg.AnchorPoint = Vector2.new(0, 0.5)
+AlbumBg.BackgroundColor3 = Config.Colors.Black
+AlbumBg.ZIndex = 3
+Instance.new("UICorner", AlbumBg).CornerRadius = UDim.new(1, 0)
+Instance.new("UIStroke", AlbumBg).Color = Config.Colors.White
 
-local AlbumCD = Instance.new("ImageLabel", AlbumCD_Bg)
+local AlbumCD = Instance.new("ImageLabel", AlbumBg)
 AlbumCD.Size = UDim2.new(1, -4, 1, -4)
 AlbumCD.Position = UDim2.new(0.5, 0, 0.5, 0)
 AlbumCD.AnchorPoint = Vector2.new(0.5, 0.5)
 AlbumCD.BackgroundTransparency = 1
 AlbumCD.Image = "rbxassetid://84404991858137"
+AlbumCD.ZIndex = 3
 Instance.new("UICorner", AlbumCD).CornerRadius = UDim.new(1, 0)
 
 local CD_Hole = Instance.new("Frame", AlbumCD)
-CD_Hole.Size = UDim2.new(0, 25, 0, 25)
+CD_Hole.Size = UDim2.new(0, 22, 0, 22)
 CD_Hole.Position = UDim2.new(0.5, 0, 0.5, 0)
 CD_Hole.AnchorPoint = Vector2.new(0.5, 0.5)
 CD_Hole.BackgroundColor3 = Config.Colors.DarkBlue
+CD_Hole.ZIndex = 4
 Instance.new("UICorner", CD_Hole).CornerRadius = UDim.new(1, 0)
 
-local BassRing = Instance.new("Frame", AlbumCD_Bg)
-BassRing.Size = UDim2.new(1, 10, 1, 10)
+-- Bass RGB Visualizer Ring
+local BassRing = Instance.new("Frame", AlbumBg)
+BassRing.Size = UDim2.new(1, 14, 1, 14)
 BassRing.Position = UDim2.new(0.5, 0, 0.5, 0)
 BassRing.AnchorPoint = Vector2.new(0.5, 0.5)
 BassRing.BackgroundTransparency = 1
-BassRing.ZIndex = 0
+BassRing.ZIndex = 2
 Instance.new("UICorner", BassRing).CornerRadius = UDim.new(1, 0)
 local BassStroke = Instance.new("UIStroke", BassRing)
-BassStroke.Thickness = 4
+BassStroke.Thickness = 3
 local BassGradient = Instance.new("UIGradient", BassStroke)
 BassGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Config.Colors.IceBlue),
+    ColorSequenceKeypoint.new(0, Config.Colors.ToscaGreen),
     ColorSequenceKeypoint.new(0.5, Config.Colors.Black),
     ColorSequenceKeypoint.new(1, Config.Colors.White)
 }
 
+-- Text Info
 local SongTitle = Instance.new("TextLabel", NowPlayingCard)
-SongTitle.Size = UDim2.new(1, -170, 0, 35)
-SongTitle.Position = UDim2.new(0, 160, 0, 25)
+SongTitle.Size = UDim2.new(1, -160, 0, 30)
+SongTitle.Position = UDim2.new(0, 150, 0, 25)
 SongTitle.BackgroundTransparency = 1
-SongTitle.Text = "No Audio Playing"
+SongTitle.Text = "No Track Selected"
 SongTitle.TextColor3 = Config.Colors.White
 SongTitle.Font = Enum.Font.GothamBold
-SongTitle.TextSize = 22
+SongTitle.TextSize = 20
 SongTitle.TextXAlignment = Enum.TextXAlignment.Left
 SongTitle.TextTruncate = Enum.TextTruncate.AtEnd
+SongTitle.ZIndex = 3
 
 local SongArtist = Instance.new("TextLabel", NowPlayingCard)
-SongArtist.Size = UDim2.new(1, -170, 0, 20)
-SongArtist.Position = UDim2.new(0, 160, 0, 60)
+SongArtist.Size = UDim2.new(1, -160, 0, 20)
+SongArtist.Position = UDim2.new(0, 150, 0, 55)
 SongArtist.BackgroundTransparency = 1
-SongArtist.Text = "Select track from Playlist/Folder"
-SongArtist.TextColor3 = Config.Colors.IceBlue
+SongArtist.Text = "Axolion Community"
+SongArtist.TextColor3 = Config.Colors.ToscaGreen
 SongArtist.Font = Enum.Font.GothamSemibold
-SongArtist.TextSize = 13
+SongArtist.TextSize = 12
 SongArtist.TextXAlignment = Enum.TextXAlignment.Left
+SongArtist.ZIndex = 3
 
--- Progress Bar
+-- Progress Slider Premium
 local ProgressContainer = Instance.new("Frame", NowPlayingCard)
-ProgressContainer.Size = UDim2.new(1, -170, 0, 20)
-ProgressContainer.Position = UDim2.new(0, 160, 0, 110)
+ProgressContainer.Size = UDim2.new(1, -160, 0, 25)
+ProgressContainer.Position = UDim2.new(0, 150, 0, 100)
 ProgressContainer.BackgroundTransparency = 1
+ProgressContainer.ZIndex = 3
 
 local ProgressBg = Instance.new("TextButton", ProgressContainer)
-ProgressBg.Size = UDim2.new(1, 0, 0, 6)
+ProgressBg.Size = UDim2.new(1, 0, 0, 4)
 ProgressBg.Position = UDim2.new(0, 0, 0.5, 0)
 ProgressBg.AnchorPoint = Vector2.new(0, 0.5)
 ProgressBg.BackgroundColor3 = Config.Colors.Black
 ProgressBg.Text = ""
 ProgressBg.AutoButtonColor = false
+ProgressBg.ZIndex = 3
 Instance.new("UICorner", ProgressBg).CornerRadius = UDim.new(1, 0)
 
 local ProgressFill = Instance.new("Frame", ProgressBg)
 ProgressFill.Size = UDim2.new(0, 0, 1, 0)
 ProgressFill.BackgroundColor3 = Config.Colors.ToscaGreen
+ProgressFill.ZIndex = 3
 Instance.new("UICorner", ProgressFill).CornerRadius = UDim.new(1, 0)
 
 local ProgressKnob = Instance.new("Frame", ProgressFill)
-ProgressKnob.Size = UDim2.new(0, 12, 0, 12)
-ProgressKnob.Position = UDim2.new(1, -6, 0.5, 0)
+ProgressKnob.Size = UDim2.new(0, 10, 0, 10)
+ProgressKnob.Position = UDim2.new(1, -5, 0.5, 0)
 ProgressKnob.AnchorPoint = Vector2.new(0.5, 0.5)
 ProgressKnob.BackgroundColor3 = Config.Colors.White
+ProgressKnob.ZIndex = 4
 Instance.new("UICorner", ProgressKnob).CornerRadius = UDim.new(1, 0)
 
 local TimeCurrent = Instance.new("TextLabel", ProgressContainer)
 TimeCurrent.Size = UDim2.new(0, 50, 0, 15)
-TimeCurrent.Position = UDim2.new(0, 0, 1, 2)
+TimeCurrent.Position = UDim2.new(0, 0, 1, 0)
 TimeCurrent.BackgroundTransparency = 1
 TimeCurrent.Text = "0:00"
 TimeCurrent.TextColor3 = Config.Colors.White
 TimeCurrent.Font = Enum.Font.Gotham
-TimeCurrent.TextSize = 11
+TimeCurrent.TextSize = 10
 TimeCurrent.TextXAlignment = Enum.TextXAlignment.Left
+TimeCurrent.ZIndex = 3
 
 local TimeTotal = Instance.new("TextLabel", ProgressContainer)
 TimeTotal.Size = UDim2.new(0, 50, 0, 15)
-TimeTotal.Position = UDim2.new(1, -50, 1, 2)
+TimeTotal.Position = UDim2.new(1, -50, 1, 0)
 TimeTotal.BackgroundTransparency = 1
 TimeTotal.Text = "0:00"
 TimeTotal.TextColor3 = Config.Colors.White
 TimeTotal.Font = Enum.Font.Gotham
-TimeTotal.TextSize = 11
+TimeTotal.TextSize = 10
 TimeTotal.TextXAlignment = Enum.TextXAlignment.Right
+TimeTotal.ZIndex = 3
 
 local isDraggingProg = false
 ProgressBg.InputBegan:Connect(function(input)
@@ -818,17 +832,17 @@ end)
 
 -- ================= SUB PART: MAIN CONTROL PANEL =================
 local ControlPanel = Instance.new("Frame", MusicPage)
-ControlPanel.Size = UDim2.new(1, 0, 0, 70)
-ControlPanel.Position = UDim2.new(0, 0, 0, 175)
+ControlPanel.Size = UDim2.new(1, 0, 0, 60)
+ControlPanel.Position = UDim2.new(0, 0, 0, 165)
 ControlPanel.BackgroundColor3 = Config.Colors.Black
 ControlPanel.BackgroundTransparency = 0.5
-Instance.new("UICorner", ControlPanel).CornerRadius = UDim.new(0, 10)
+ControlPanel.ZIndex = 2
+Instance.new("UICorner", ControlPanel).CornerRadius = UDim.new(0, 12)
 
 local CtrlLayout = Instance.new("UIListLayout", ControlPanel)
 CtrlLayout.FillDirection = Enum.FillDirection.Horizontal
-CtrlLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+CtrlLayout.HorizontalAlignment = Enum.HorizontalAlignment.SpaceEvenly
 CtrlLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-CtrlLayout.Padding = UDim.new(0, 20)
 CtrlLayout.SortOrder = Enum.SortOrder.LayoutOrder
 
 local function CreateCtrlBtn(name, text, size, txtSize, order, isMain)
@@ -836,186 +850,61 @@ local function CreateCtrlBtn(name, text, size, txtSize, order, isMain)
     btn.Name = name
     btn.Size = UDim2.new(0, size, 0, size)
     btn.LayoutOrder = order
-    btn.BackgroundColor3 = isMain and Config.Colors.White or Config.Colors.DarkBlue
+    btn.BackgroundColor3 = isMain and Config.Colors.ToscaGreen or Config.Colors.DarkBlue
+    btn.BackgroundTransparency = isMain and 0 or 0.3
     btn.Text = text
     btn.TextColor3 = isMain and Config.Colors.Black or Config.Colors.White
     btn.Font = Enum.Font.GothamBold
     btn.TextSize = txtSize
     btn.AutoButtonColor = false
+    btn.ZIndex = 3
     Instance.new("UICorner", btn).CornerRadius = UDim.new(1, 0)
-    if not isMain then Instance.new("UIStroke", btn).Color = Config.Colors.IceBlue end
+    
+    if not isMain then
+        local stroke = Instance.new("UIStroke", btn)
+        stroke.Color = Config.Colors.White
+        stroke.Transparency = 0.8
+    end
     
     btn.MouseEnter:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, size+4, 0, size+4)}):Play() end)
     btn.MouseLeave:Connect(function() TweenService:Create(btn, TweenInfo.new(0.2), {Size = UDim2.new(0, size, 0, size)}):Play() end)
     return btn
 end
 
-local BtnShuffle = CreateCtrlBtn("BtnShuffle", "🔀", 35, 14, 1, false)
-local BtnPrev    = CreateCtrlBtn("BtnPrev", "⏮", 40, 16, 2, false)
-local BtnPlay    = CreateCtrlBtn("BtnPlay", "▶", 55, 24, 3, true)
-local BtnNext    = CreateCtrlBtn("BtnNext", "⏭", 40, 16, 4, false)
-local BtnRepeat  = CreateCtrlBtn("BtnRepeat", "🔁", 35, 14, 5, false)
+local BtnQueue    = CreateCtrlBtn("BtnQueue", "≡", 35, 16, 1, false)
+local BtnTempo    = CreateCtrlBtn("BtnTempo", "⏱", 35, 14, 2, false)
+local BtnPrev     = CreateCtrlBtn("BtnPrev", "⏮", 40, 16, 3, false)
+local BtnPlay     = CreateCtrlBtn("BtnPlay", "▶", 50, 22, 4, true)
+local BtnNext     = CreateCtrlBtn("BtnNext", "⏭", 40, 16, 5, false)
+local BtnPlayMode = CreateCtrlBtn("BtnPlayMode", "🔁", 35, 14, 6, false)
 
--- ================= SUB PART: FEATURE TOOLBAR & DYNAMIC PANELS =================
-local Toolbar = Instance.new("Frame", MusicPage)
-Toolbar.Size = UDim2.new(1, 0, 0, 45)
-Toolbar.Position = UDim2.new(0, 0, 0, 260)
-Toolbar.BackgroundColor3 = Config.Colors.Black
-Toolbar.BackgroundTransparency = 0.5
-Instance.new("UICorner", Toolbar).CornerRadius = UDim.new(0, 8)
+-- ================= SUB PART: FLOATING TEMPO PANEL =================
+local TempoContainer = Instance.new("Frame", MusicPage)
+TempoContainer.Size = UDim2.new(0, 200, 0, 45)
+TempoContainer.Position = UDim2.new(0.5, -100, 0, 110) -- Muncul elegan di atas tombol
+TempoContainer.BackgroundColor3 = Config.Colors.DarkBlue
+TempoContainer.BackgroundTransparency = 0.1
+TempoContainer.ClipsDescendants = true
+TempoContainer.Visible = false
+TempoContainer.ZIndex = 10
+Instance.new("UICorner", TempoContainer).CornerRadius = UDim.new(0, 10)
+Instance.new("UIStroke", TempoContainer).Color = Config.Colors.ToscaGreen
 
-local ToolLayout = Instance.new("UIListLayout", Toolbar)
-ToolLayout.FillDirection = Enum.FillDirection.Horizontal
-ToolLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-ToolLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-ToolLayout.Padding = UDim.new(0, 15)
-ToolLayout.SortOrder = Enum.SortOrder.LayoutOrder
-
-local ActivePanel = nil
-local DynamicPanelContainer = Instance.new("Frame", MusicPage)
-DynamicPanelContainer.Size = UDim2.new(1, 0, 0, 0)
-DynamicPanelContainer.Position = UDim2.new(0, 0, 0, 315)
-DynamicPanelContainer.BackgroundColor3 = Config.Colors.DarkBlue
-DynamicPanelContainer.BackgroundTransparency = 0.3
-DynamicPanelContainer.ClipsDescendants = true
-Instance.new("UICorner", DynamicPanelContainer).CornerRadius = UDim.new(0, 10)
-local DStroke = Instance.new("UIStroke", DynamicPanelContainer)
-DStroke.Color = Config.Colors.IceBlue
-DStroke.Transparency = 1
-
-local function CreateToolBtn(text, icon, order, sizeX)
-    local btn = Instance.new("TextButton", Toolbar)
-    btn.Size = UDim2.new(0, sizeX, 0, 30)
-    btn.LayoutOrder = order
-    btn.BackgroundColor3 = Config.Colors.DarkBlue
-    btn.Text = icon .. " " .. text
-    btn.TextColor3 = Config.Colors.White
-    btn.Font = Enum.Font.GothamSemibold
-    btn.TextSize = 12
-    btn.AutoButtonColor = false
-    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
-    local stroke = Instance.new("UIStroke", btn)
-    stroke.Color = Config.Colors.ToscaGreen
-    stroke.Transparency = 1
-    return btn, stroke
-end
-
-local BtnVol, StrVol     = CreateToolBtn("Volume", "🔊", 1, 90)
-local BtnTmp, StrTmp     = CreateToolBtn("Tempo", "⏱", 2, 90)
-local BtnQueue, StrQueue = CreateToolBtn("Queue", "≡", 3, 90)
-
--- Sub-Panels
-local PnlVol = Instance.new("Frame", DynamicPanelContainer)
-PnlVol.Size = UDim2.new(1, 0, 1, 0)
-PnlVol.BackgroundTransparency = 1
-PnlVol.Visible = false
-
-local PnlTmp = Instance.new("Frame", DynamicPanelContainer)
-PnlTmp.Size = UDim2.new(1, 0, 1, 0)
-PnlTmp.BackgroundTransparency = 1
-PnlTmp.Visible = false
-
-local PnlQueue = Instance.new("ScrollingFrame", DynamicPanelContainer)
-PnlQueue.Size = UDim2.new(1, -20, 1, -20)
-PnlQueue.Position = UDim2.new(0, 10, 0, 10)
-PnlQueue.BackgroundTransparency = 1
-PnlQueue.ScrollBarThickness = 4
-PnlQueue.Visible = false
-local QLayout = Instance.new("UIListLayout", PnlQueue)
-QLayout.SortOrder = Enum.SortOrder.LayoutOrder
-QLayout.Padding = UDim.new(0, 5)
-
-local function SwitchDynamicPanel(targetBtn, targetStroke, targetPanel, expandHeight)
-    for _, str in ipairs({StrVol, StrTmp, StrQueue}) do str.Transparency = 1 end
-    for _, p in ipairs({PnlVol, PnlTmp, PnlQueue}) do p.Visible = false end
-
-    if ActivePanel == targetPanel then
-        TweenService:Create(DynamicPanelContainer, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, 0)}):Play()
-        DStroke.Transparency = 1
-        ActivePanel = nil
-    else
-        targetStroke.Transparency = 0
-        targetPanel.Visible = true
-        DStroke.Transparency = 0
-        TweenService:Create(DynamicPanelContainer, TweenInfo.new(0.3), {Size = UDim2.new(1, 0, 0, expandHeight)}):Play()
-        ActivePanel = targetPanel
-    end
-end
-
-BtnVol.MouseButton1Click:Connect(function() SwitchDynamicPanel(BtnVol, StrVol, PnlVol, 80) end)
-BtnTmp.MouseButton1Click:Connect(function() SwitchDynamicPanel(BtnTmp, StrTmp, PnlTmp, 70) end)
-BtnQueue.MouseButton1Click:Connect(function() SwitchDynamicPanel(BtnQueue, StrQueue, PnlQueue, 150) end)
-
--- [Isi Panel Volume 0-100%]
-local VolTitle = Instance.new("TextLabel", PnlVol)
-VolTitle.Size = UDim2.new(0, 100, 0, 20)
-VolTitle.Position = UDim2.new(0, 15, 0, 15)
-VolTitle.BackgroundTransparency = 1
-VolTitle.Text = "Master Volume"
-VolTitle.TextColor3 = Config.Colors.IceBlue
-VolTitle.Font = Enum.Font.GothamBold
-VolTitle.TextSize = 13
-VolTitle.TextXAlignment = Enum.TextXAlignment.Left
-
-local VolPct = Instance.new("TextLabel", PnlVol)
-VolPct.Size = UDim2.new(0, 50, 0, 20)
-VolPct.Position = UDim2.new(1, -65, 0, 15)
-VolPct.BackgroundTransparency = 1
-VolPct.Text = "100%"
-VolPct.TextColor3 = Config.Colors.ToscaGreen
-VolPct.Font = Enum.Font.GothamBold
-VolPct.TextSize = 14
-VolPct.TextXAlignment = Enum.TextXAlignment.Right
-
-local VolBg = Instance.new("TextButton", PnlVol)
-VolBg.Size = UDim2.new(1, -30, 0, 8)
-VolBg.Position = UDim2.new(0, 15, 0, 45)
-VolBg.BackgroundColor3 = Config.Colors.Black
-VolBg.Text = ""
-Instance.new("UICorner", VolBg).CornerRadius = UDim.new(1, 0)
-local VolFill = Instance.new("Frame", VolBg)
-VolFill.Size = UDim2.new(1, 0, 1, 0)
-VolFill.BackgroundColor3 = Config.Colors.White
-Instance.new("UICorner", VolFill).CornerRadius = UDim.new(1, 0)
-local VolKnob = Instance.new("Frame", VolFill)
-VolKnob.Size = UDim2.new(0, 16, 0, 16)
-VolKnob.Position = UDim2.new(1, -8, 0.5, 0)
-VolKnob.AnchorPoint = Vector2.new(0.5, 0.5)
-VolKnob.BackgroundColor3 = Config.Colors.ToscaGreen
-Instance.new("UICorner", VolKnob).CornerRadius = UDim.new(1, 0)
-
-local draggingVol = false
-VolBg.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then draggingVol = true end
-end)
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then draggingVol = false end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if draggingVol and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local pct = math.clamp((input.Position.X - VolBg.AbsolutePosition.X) / VolBg.AbsoluteSize.X, 0, 1)
-        VolFill.Size = UDim2.new(pct, 0, 1, 0)
-        VolPct.Text = math.floor(pct * 100) .. "%"
-        AudioCore.Volume = pct * 2 
-    end
-end)
-
--- [Isi Panel Tempo 0.5 - 2.0]
-local TmpLayout = Instance.new("UIListLayout", PnlTmp)
+local TmpLayout = Instance.new("UIListLayout", TempoContainer)
 TmpLayout.FillDirection = Enum.FillDirection.Horizontal
-TmpLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+TmpLayout.HorizontalAlignment = Enum.HorizontalAlignment.SpaceEvenly
 TmpLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-TmpLayout.Padding = UDim.new(0, 15)
 
 local TmpBtns = {}
 for _, spd in ipairs({0.5, 1.0, 1.5, 2.0}) do
-    local tb = Instance.new("TextButton", PnlTmp)
-    tb.Size = UDim2.new(0, 60, 0, 35)
-    tb.BackgroundColor3 = (spd == 1.0) and Config.Colors.IceBlue or Config.Colors.Black
+    local tb = Instance.new("TextButton", TempoContainer)
+    tb.Size = UDim2.new(0, 40, 0, 30)
+    tb.BackgroundColor3 = (spd == 1.0) and Config.Colors.ToscaGreen or Config.Colors.Black
     tb.Text = spd .. "x"
     tb.TextColor3 = (spd == 1.0) and Config.Colors.Black or Config.Colors.White
     tb.Font = Enum.Font.GothamBold
-    tb.TextSize = 14
+    tb.TextSize = 12
+    tb.ZIndex = 11
     Instance.new("UICorner", tb).CornerRadius = UDim.new(0, 6)
     table.insert(TmpBtns, tb)
     
@@ -1025,49 +914,94 @@ for _, spd in ipairs({0.5, 1.0, 1.5, 2.0}) do
             btn.BackgroundColor3 = Config.Colors.Black
             btn.TextColor3 = Config.Colors.White
         end
-        tb.BackgroundColor3 = Config.Colors.IceBlue
+        tb.BackgroundColor3 = Config.Colors.ToscaGreen
         tb.TextColor3 = Config.Colors.Black
-        App.Notify("Tempo Changed", "Kecepatan diubah menjadi " .. spd .. "x", 2)
+        App.Notify("Tempo Berubah", "Kecepatan diatur ke " .. spd .. "x", 2)
+        TweenService:Create(TempoContainer, TweenInfo.new(0.3), {Size = UDim2.new(0, 200, 0, 0)}):Play()
+        task.delay(0.3, function() TempoContainer.Visible = false end)
     end)
 end
 
+BtnTempo.MouseButton1Click:Connect(function()
+    if TempoContainer.Visible then
+        TweenService:Create(TempoContainer, TweenInfo.new(0.3), {Size = UDim2.new(0, 200, 0, 0)}):Play()
+        task.delay(0.3, function() TempoContainer.Visible = false end)
+    else
+        TempoContainer.Visible = true
+        TempoContainer.Size = UDim2.new(0, 200, 0, 0)
+        TweenService:Create(TempoContainer, TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out), {Size = UDim2.new(0, 200, 0, 45)}):Play()
+    end
+end)
+
+-- ================= SUB PART: QUEUE PLAYLIST CONTAINER =================
+local QueueContainer = Instance.new("Frame", MusicPage)
+QueueContainer.Size = UDim2.new(1, 0, 0, 0)
+QueueContainer.Position = UDim2.new(0, 0, 0, 235)
+QueueContainer.BackgroundColor3 = Config.Colors.DarkBlue
+QueueContainer.BackgroundTransparency = 0.2
+QueueContainer.ClipsDescendants = true
+QueueContainer.ZIndex = 1
+Instance.new("UICorner", QueueContainer).CornerRadius = UDim.new(0, 10)
+local QStroke = Instance.new("UIStroke", QueueContainer)
+QStroke.Color = Config.Colors.ToscaGreen
+QStroke.Transparency = 1
+
+local QueueScroll = Instance.new("ScrollingFrame", QueueContainer)
+QueueScroll.Size = UDim2.new(1, -10, 1, -10)
+QueueScroll.Position = UDim2.new(0, 5, 0, 5)
+QueueScroll.BackgroundTransparency = 1
+QueueScroll.ScrollBarThickness = 3
+QueueScroll.ScrollBarImageColor3 = Config.Colors.ToscaGreen
+local QLayout = Instance.new("UIListLayout", QueueScroll)
+QLayout.SortOrder = Enum.SortOrder.LayoutOrder
+QLayout.Padding = UDim.new(0, 6)
+
+BtnQueue.MouseButton1Click:Connect(function()
+    if QueueContainer.Size.Y.Offset > 0 then
+        TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 0, 0)}):Play()
+        QStroke.Transparency = 1
+    else
+        QStroke.Transparency = 0
+        -- Sisa area layar bawah dikalkulasi otomatis
+        TweenService:Create(QueueContainer, TweenInfo.new(0.4, Enum.EasingStyle.Quart), {Size = UDim2.new(1, 0, 1, -240)}):Play()
+    end
+end)
+
 -- ================= SUB PART: SYSTEM LOGIC & CONNECTIONS =================
 function App.UpdateQueueUI()
-    for _, child in ipairs(PnlQueue:GetChildren()) do
+    for _, child in ipairs(QueueScroll:GetChildren()) do
         if child:IsA("Frame") then child:Destroy() end
     end
     
     for i, track in ipairs(App.MusicQueue) do
-        local qItem = Instance.new("Frame", PnlQueue)
-        qItem.Size = UDim2.new(1, -10, 0, 35)
+        local qItem = Instance.new("Frame", QueueScroll)
+        qItem.Size = UDim2.new(1, -5, 0, 40)
         qItem.BackgroundColor3 = Config.Colors.Black
-        qItem.BackgroundTransparency = 0.5
-        Instance.new("UICorner", qItem).CornerRadius = UDim.new(0, 6)
+        qItem.BackgroundTransparency = 0.4
+        Instance.new("UICorner", qItem).CornerRadius = UDim.new(0, 8)
         
         local qTitle = Instance.new("TextLabel", qItem)
         qTitle.Size = UDim2.new(1, -50, 1, 0)
-        qTitle.Position = UDim2.new(0, 10, 0, 0)
+        qTitle.Position = UDim2.new(0, 15, 0, 0)
         qTitle.BackgroundTransparency = 1
         qTitle.Text = i .. ". " .. track.Title
         qTitle.TextColor3 = Config.Colors.White
         qTitle.Font = Enum.Font.GothamSemibold
-        qTitle.TextSize = 12
+        qTitle.TextSize = 13
         qTitle.TextXAlignment = Enum.TextXAlignment.Left
         
         local playBtn = Instance.new("TextButton", qItem)
-        playBtn.Size = UDim2.new(0, 25, 0, 25)
-        playBtn.Position = UDim2.new(1, -35, 0.5, -12.5)
+        playBtn.Size = UDim2.new(0, 26, 0, 26)
+        playBtn.Position = UDim2.new(1, -36, 0.5, -13)
         playBtn.BackgroundColor3 = Config.Colors.DarkBlue
         playBtn.Text = "▶"
         playBtn.TextColor3 = Config.Colors.White
         playBtn.Font = Enum.Font.GothamBold
         Instance.new("UICorner", playBtn).CornerRadius = UDim.new(1, 0)
         
-        playBtn.MouseButton1Click:Connect(function()
-            App.PlayTrack(i)
-        end)
+        playBtn.MouseButton1Click:Connect(function() App.PlayTrack(i) end)
     end
-    PnlQueue.CanvasSize = UDim2.new(0, 0, 0, #App.MusicQueue * 40)
+    QueueScroll.CanvasSize = UDim2.new(0, 0, 0, #App.MusicQueue * 46)
 end
 
 function App.PlayTrack(index)
@@ -1090,14 +1024,17 @@ function App.PlayTrack(index)
     TweenService:Create(BtnPlay, TweenInfo.new(0.3), {BackgroundColor3 = Config.Colors.ToscaGreen}):Play()
     
     -- Highlight Active Queue
-    for i, child in ipairs(PnlQueue:GetChildren()) do
+    for i, child in ipairs(QueueScroll:GetChildren()) do
         if child:IsA("Frame") then
-            if i == index + 1 then -- +1 because UIListLayout is index 1
+            if i == index + 1 then
                 child.BackgroundColor3 = Config.Colors.DarkBlue
                 child:FindFirstChildOfClass("TextLabel").TextColor3 = Config.Colors.ToscaGreen
+                Instance.new("UIStroke", child).Color = Config.Colors.ToscaGreen
             else
                 child.BackgroundColor3 = Config.Colors.Black
                 child:FindFirstChildOfClass("TextLabel").TextColor3 = Config.Colors.White
+                local s = child:FindFirstChildOfClass("UIStroke")
+                if s then s:Destroy() end
             end
         end
     end
@@ -1105,7 +1042,7 @@ function App.PlayTrack(index)
 end
 
 BtnPlay.MouseButton1Click:Connect(function()
-    if #App.MusicQueue == 0 then return App.Notify("Empty Queue", "Tambahkan lagu dari Playlist atau Folder!", 3) end
+    if #App.MusicQueue == 0 then return App.Notify("Daftar Kosong", "Tambahkan lagu ke playlist!", 3) end
     if App.IsPlaying then
         AudioCore:Pause()
         App.IsPlaying = false
@@ -1120,23 +1057,38 @@ BtnPlay.MouseButton1Click:Connect(function()
 end)
 
 BtnNext.MouseButton1Click:Connect(function()
-    if App.IsShuffle then App.PlayTrack(math.random(1, #App.MusicQueue)) else App.PlayTrack(App.CurrentTrackIndex + 1) end
+    if App.PlayMode == 3 then App.PlayTrack(math.random(1, #App.MusicQueue)) else App.PlayTrack(App.CurrentTrackIndex + 1) end
 end)
 
 BtnPrev.MouseButton1Click:Connect(function() App.PlayTrack(App.CurrentTrackIndex - 1) end)
 
-BtnShuffle.MouseButton1Click:Connect(function()
-    App.IsShuffle = not App.IsShuffle
-    BtnShuffle.TextColor3 = App.IsShuffle and Config.Colors.ToscaGreen or Config.Colors.White
-end)
-
-BtnRepeat.MouseButton1Click:Connect(function()
-    App.IsRepeat = not App.IsRepeat
-    BtnRepeat.TextColor3 = App.IsRepeat and Config.Colors.ToscaGreen or Config.Colors.White
+BtnPlayMode.MouseButton1Click:Connect(function()
+    App.PlayMode = App.PlayMode + 1
+    if App.PlayMode > 3 then App.PlayMode = 1 end
+    
+    if App.PlayMode == 1 then
+        BtnPlayMode.Text = "🔁" -- Auto Next
+        BtnPlayMode.TextColor3 = Config.Colors.White
+        App.Notify("Mode Putar", "Putar Otomatis", 2)
+    elseif App.PlayMode == 2 then
+        BtnPlayMode.Text = "🔂" -- Repeat One
+        BtnPlayMode.TextColor3 = Config.Colors.ToscaGreen
+        App.Notify("Mode Putar", "Ulangi Sekali", 2)
+    elseif App.PlayMode == 3 then
+        BtnPlayMode.Text = "🔀" -- Shuffle
+        BtnPlayMode.TextColor3 = Config.Colors.ToscaGreen
+        App.Notify("Mode Putar", "Putar Acak", 2)
+    end
 end)
 
 AudioCore.Ended:Connect(function()
-    if App.IsRepeat then App.PlayTrack(App.CurrentTrackIndex) else BtnNext.MouseButton1Click:Fire() end
+    if App.PlayMode == 2 then 
+        App.PlayTrack(App.CurrentTrackIndex) 
+    elseif App.PlayMode == 3 then
+        App.PlayTrack(math.random(1, #App.MusicQueue))
+    else 
+        BtnNext.MouseButton1Click:Fire() 
+    end
 end)
 
 local function formatTime(s)
@@ -1151,8 +1103,8 @@ RunService.RenderStepped:Connect(function()
         BassGradient.Rotation = (BassGradient.Rotation + 2) % 360
         
         local loud = (AudioCore.PlaybackLoudness / 1000)
-        local pulse = 1 + math.clamp(loud * 0.15, 0, 0.2)
-        BassRing.Size = BassRing.Size:Lerp(UDim2.new(pulse, 10, pulse, 10), 0.2)
+        local pulse = 1 + math.clamp(loud * 0.15, 0, 0.15)
+        BassRing.Size = BassRing.Size:Lerp(UDim2.new(pulse, 14, pulse, 14), 0.2)
         
         local current = AudioCore.TimePosition
         local total = AudioCore.TimeLength
@@ -1162,6 +1114,6 @@ RunService.RenderStepped:Connect(function()
         end
         TimeTotal.Text = formatTime(total)
     else
-        BassRing.Size = BassRing.Size:Lerp(UDim2.new(1, 10, 1, 10), 0.1)
+        BassRing.Size = BassRing.Size:Lerp(UDim2.new(1, 14, 1, 14), 0.1)
     end
 end)
