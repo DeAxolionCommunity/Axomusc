@@ -1618,5 +1618,491 @@ if not Tahap1_Success then
 end
 
 -- ==============================================================================
--- END OF TAHAP 1 REVISION. MENUNGGU PERINTAH LANJUT.
+-- [ AXOLION COMMUNITY (BETA) - UI SCRIPT ]
+-- TAHAP 2: FOLDER SYSTEM, DYNAMIC PLAYLIST, & SLIDING QUEUE SINKRONISASI
 -- ==============================================================================
+
+local Tahap2_Success, Tahap2_Error = pcall(function()
+    
+    local TweenService = game:GetService("TweenService")
+    local Colors = _G.Axomusc_Config.Colors
+    
+    -- ==============================================================================
+    -- [1] DATABASE LAGU (CONTOH/DUMMY LIBRARY UNTUK FOLDER)
+    -- ==============================================================================
+    _G.Axomusc_Library = {
+        ["Axolion Vibes"] = {
+            {Title = "Cyberpunk Intro", Artist = "Axolion Audio", ID = "6023247076"},
+            {Title = "Chill Vibes", Artist = "Community", ID = "5806652150"},
+            {Title = "Epic Cinematic", Artist = "Axolion", ID = "1839843701"}
+        },
+        ["Trending & Pop"] = {
+            {Title = "Fearless", Artist = "Lost Sky", ID = "314818164"},
+            {Title = "Invincible", Artist = "DEAF KEV", ID = "163612502"},
+            {Title = "Fade", Artist = "Alan Walker", ID = "279207008"}
+        },
+        ["NCS / EDM"] = {
+            {Title = "Blank", Artist = "Disfigure", ID = "143657788"},
+            {Title = "Symbolism", Artist = "Electro-Light", ID = "231362095"}
+        }
+    }
+
+    -- ==============================================================================
+    -- [2] STATE MANAGER UNTUK PLAYLIST & QUEUE
+    -- ==============================================================================
+    _G.Axomusc_Queue = {}
+    _G.Axomusc_CurrentIndex = 0
+
+    local function CreateTween(object, time, properties)
+        local t = TweenService:Create(object, TweenInfo.new(time, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), properties)
+        t:Play()
+        return t
+    end
+
+    -- ==============================================================================
+    -- [3] FOLDER MENU (HORIZONTAL TABS & VERTICAL LIST)
+    -- ==============================================================================
+    local FolderPage = _G.Page_Folder.Page
+    FolderPage.CanvasSize = UDim2.new(0, 0, 0, 0) -- Disable default scroll untuk custom layout
+    FolderPage.ScrollBarThickness = 0
+    
+    -- Hapus layout bawaan dari Bagian 1 agar tidak bentrok
+    for _, child in pairs(FolderPage:GetChildren()) do
+        if child:IsA("UIListLayout") or child:IsA("UIPadding") then child:Destroy() end
+    end
+
+    -- [3.1] Horizontal Tab Container
+    local TabContainer = Instance.new("ScrollingFrame")
+    TabContainer.Name = "Category_Tabs"
+    TabContainer.Size = UDim2.new(1, -20, 0, 45)
+    TabContainer.Position = UDim2.new(0, 10, 0, 10)
+    TabContainer.BackgroundTransparency = 1
+    TabContainer.ScrollBarThickness = 0
+    TabContainer.CanvasSize = UDim2.new(2, 0, 0, 0) -- Akan di-update dinamis
+    TabContainer.ScrollingDirection = Enum.ScrollingDirection.X
+    TabContainer.Parent = FolderPage
+
+    local TabLayout = Instance.new("UIListLayout")
+    TabLayout.FillDirection = Enum.FillDirection.Horizontal
+    TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabLayout.Padding = UDim.new(0, 10)
+    TabLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    TabLayout.Parent = TabContainer
+
+    -- [3.2] Vertical Song List Container
+    local SongContainer = Instance.new("ScrollingFrame")
+    SongContainer.Name = "Song_List"
+    SongContainer.Size = UDim2.new(1, -20, 1, -75)
+    SongContainer.Position = UDim2.new(0, 10, 0, 65)
+    SongContainer.BackgroundTransparency = 1
+    SongContainer.ScrollBarThickness = 4
+    SongContainer.ScrollBarImageColor3 = Colors.ToscaGreen
+    SongContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    SongContainer.Parent = FolderPage
+
+    local SongLayout = Instance.new("UIListLayout")
+    SongLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    SongLayout.Padding = UDim.new(0, 8)
+    SongLayout.Parent = SongContainer
+
+    SongLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        SongContainer.CanvasSize = UDim2.new(0, 0, 0, SongLayout.AbsoluteContentSize.Y + 10)
+    end)
+    TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContainer.CanvasSize = UDim2.new(0, TabLayout.AbsoluteContentSize.X + 10, 0, 0)
+    end)
+
+    -- [3.3] Fungsi Render Daftar Lagu
+    local function RenderSongs(CategoryName)
+        -- Clear previous songs
+        for _, child in pairs(SongContainer:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+
+        local songs = _G.Axomusc_Library[CategoryName] or {}
+        for i, song in ipairs(songs) do
+            local Card = Instance.new("Frame")
+            Card.Name = "Card_" .. i
+            Card.Size = UDim2.new(1, -10, 0, 60)
+            Card.BackgroundColor3 = Colors.DarkBlue
+            Card.BackgroundTransparency = 0.5
+            Card.BorderSizePixel = 0
+            Card.Parent = SongContainer
+
+            local CardCorner = Instance.new("UICorner")
+            CardCorner.CornerRadius = UDim.new(0, 8)
+            CardCorner.Parent = Card
+
+            local CardStroke = Instance.new("UIStroke")
+            CardStroke.Color = Colors.IceBlue
+            CardStroke.Transparency = 0.8
+            CardStroke.Parent = Card
+
+            -- Thumbnail Dummy
+            local Thumb = Instance.new("ImageLabel")
+            Thumb.Size = UDim2.new(0, 45, 0, 45)
+            Thumb.Position = UDim2.new(0, 10, 0.5, -22.5)
+            Thumb.BackgroundColor3 = Colors.Black
+            Thumb.Image = _G.Axomusc_Config.Thumbnail
+            Thumb.ScaleType = Enum.ScaleType.Crop
+            Thumb.Parent = Card
+            Instance.new("UICorner", Thumb).CornerRadius = UDim.new(0, 6)
+
+            -- Meta
+            local Title = Instance.new("TextLabel")
+            Title.Size = UDim2.new(1, -150, 0, 20)
+            Title.Position = UDim2.new(0, 65, 0, 10)
+            Title.BackgroundTransparency = 1
+            Title.Text = song.Title
+            Title.TextColor3 = Colors.White
+            Title.Font = Enum.Font.GothamBold
+            Title.TextSize = 14
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+            Title.Parent = Card
+
+            local Artist = Instance.new("TextLabel")
+            Artist.Size = UDim2.new(1, -150, 0, 15)
+            Artist.Position = UDim2.new(0, 65, 0, 32)
+            Artist.BackgroundTransparency = 1
+            Artist.Text = song.Artist
+            Artist.TextColor3 = Colors.ToscaGreen
+            Artist.Font = Enum.Font.Gotham
+            Artist.TextSize = 12
+            Artist.TextXAlignment = Enum.TextXAlignment.Left
+            Artist.Parent = Card
+
+            -- Add to Queue Button
+            local AddBtn = Instance.new("TextButton")
+            AddBtn.Size = UDim2.new(0, 35, 0, 35)
+            AddBtn.Position = UDim2.new(1, -45, 0.5, -17.5)
+            AddBtn.BackgroundColor3 = Colors.ToscaGreen
+            AddBtn.BackgroundTransparency = 0.8
+            AddBtn.Text = "+"
+            AddBtn.TextColor3 = Colors.White
+            AddBtn.Font = Enum.Font.GothamBold
+            AddBtn.TextSize = 20
+            AddBtn.Parent = Card
+            Instance.new("UICorner", AddBtn).CornerRadius = UDim.new(0, 6)
+            Instance.new("UIStroke", AddBtn).Color = Colors.ToscaGreen
+
+            AddBtn.MouseButton1Click:Connect(function()
+                table.insert(_G.Axomusc_Queue, song)
+                if _G.Axomusc_Notify then
+                    _G.Axomusc_Notify("Playlist Diperbarui", song.Title .. " ditambahkan ke antrean.", 2)
+                end
+                if _G.Axomusc_RefreshPlaylistUI then _G.Axomusc_RefreshPlaylistUI() end
+                
+                -- Animasi Klik
+                CreateTween(AddBtn, 0.1, {BackgroundColor3 = Colors.IceBlue})
+                task.wait(0.1)
+                CreateTween(AddBtn, 0.3, {BackgroundColor3 = Colors.ToscaGreen})
+            end)
+            
+            -- Play Direct Button
+            local PlayBtn = Instance.new("TextButton")
+            PlayBtn.Size = UDim2.new(0, 35, 0, 35)
+            PlayBtn.Position = UDim2.new(1, -90, 0.5, -17.5)
+            PlayBtn.BackgroundColor3 = Colors.IceBlue
+            PlayBtn.BackgroundTransparency = 0.8
+            PlayBtn.Text = "▶"
+            PlayBtn.TextColor3 = Colors.White
+            PlayBtn.Font = Enum.Font.GothamBold
+            PlayBtn.TextSize = 16
+            PlayBtn.Parent = Card
+            Instance.new("UICorner", PlayBtn).CornerRadius = UDim.new(0, 6)
+            Instance.new("UIStroke", PlayBtn).Color = Colors.IceBlue
+
+            PlayBtn.MouseButton1Click:Connect(function()
+                if _G.Axomusc_PlaySong then
+                    _G.Axomusc_PlaySong(song.ID, song.Title, song.Artist)
+                    
+                    -- Insert ke queue dan jadikan index ini
+                    table.insert(_G.Axomusc_Queue, song)
+                    _G.Axomusc_CurrentIndex = #_G.Axomusc_Queue
+                    if _G.Axomusc_RefreshPlaylistUI then _G.Axomusc_RefreshPlaylistUI() end
+                end
+            end)
+        end
+    end
+
+    -- [3.4] Buat Tab Buttons Dinamis
+    local activeTabLine = nil
+    for CatName, _ in pairs(_G.Axomusc_Library) do
+        local TabBtn = Instance.new("TextButton")
+        TabBtn.Name = "Tab_" .. CatName
+        TabBtn.Size = UDim2.new(0, 120, 0, 30)
+        TabBtn.BackgroundColor3 = Colors.Black
+        TabBtn.BackgroundTransparency = 0.4
+        TabBtn.Text = CatName
+        TabBtn.TextColor3 = Colors.White
+        TabBtn.Font = Enum.Font.GothamSemibold
+        TabBtn.TextSize = 13
+        TabBtn.Parent = TabContainer
+        Instance.new("UICorner", TabBtn).CornerRadius = UDim.new(0, 6)
+        
+        local Indicator = Instance.new("Frame")
+        Indicator.Size = UDim2.new(0, 0, 0, 2)
+        Indicator.Position = UDim2.new(0.5, 0, 1, -2)
+        Indicator.AnchorPoint = Vector2.new(0.5, 0)
+        Indicator.BackgroundColor3 = Colors.ToscaGreen
+        Indicator.BorderSizePixel = 0
+        Indicator.Parent = TabBtn
+
+        TabBtn.MouseButton1Click:Connect(function()
+            -- Reset semua tab
+            for _, child in pairs(TabContainer:GetChildren()) do
+                if child:IsA("TextButton") then
+                    CreateTween(child, 0.3, {TextColor3 = Colors.White, BackgroundTransparency = 0.4})
+                    CreateTween(child:FindFirstChild("Frame"), 0.3, {Size = UDim2.new(0, 0, 0, 2)})
+                end
+            end
+            -- Aktifkan tab ini
+            CreateTween(TabBtn, 0.3, {TextColor3 = Colors.ToscaGreen, BackgroundTransparency = 0})
+            CreateTween(Indicator, 0.3, {Size = UDim2.new(0.8, 0, 0, 2)})
+            RenderSongs(CatName)
+        end)
+    end
+
+    -- Render Tab Pertama Secara Default
+    local firstTab = TabContainer:FindFirstChildWhichIsA("TextButton")
+    if firstTab then
+        -- Simulasikan klik pada tab pertama
+        for _, connection in pairs(getconnections(firstTab.MouseButton1Click) or {}) do connection.Function() end
+        if not getconnections then -- Fallback jika getconnections tidak didukung exploit
+            CreateTween(firstTab, 0.3, {TextColor3 = Colors.ToscaGreen, BackgroundTransparency = 0})
+            CreateTween(firstTab:FindFirstChild("Frame"), 0.3, {Size = UDim2.new(0.8, 0, 0, 2)})
+            RenderSongs(firstTab.Text)
+        end
+    end
+
+
+    -- ==============================================================================
+    -- [4] PLAYLIST MENU (MANAGE QUEUE)
+    -- ==============================================================================
+    local PlaylistPage = _G.Page_Playlist.Page
+    
+    _G.Axomusc_RefreshPlaylistUI = function()
+        for _, child in pairs(PlaylistPage:GetChildren()) do
+            if child:IsA("Frame") and child.Name:match("QCard_") then child:Destroy() end
+        end
+
+        if #_G.Axomusc_Queue == 0 then
+            local EmptyText = Instance.new("TextLabel")
+            EmptyText.Name = "QCard_Empty"
+            EmptyText.Size = UDim2.new(1, 0, 0, 50)
+            EmptyText.BackgroundTransparency = 1
+            EmptyText.Text = "Antrean kosong. Tambahkan lagu dari Folder."
+            EmptyText.TextColor3 = Colors.White
+            EmptyText.TextTransparency = 0.5
+            EmptyText.Font = Enum.Font.Gotham
+            EmptyText.TextSize = 13
+            EmptyText.Parent = PlaylistPage
+            return
+        end
+
+        for i, song in ipairs(_G.Axomusc_Queue) do
+            local isPlaying = (i == _G.Axomusc_CurrentIndex)
+
+            local QCard = Instance.new("Frame")
+            QCard.Name = "QCard_" .. i
+            QCard.Size = UDim2.new(1, -10, 0, 50)
+            QCard.BackgroundColor3 = isPlaying and Colors.ToscaGreen or Colors.DarkBlue
+            QCard.BackgroundTransparency = isPlaying and 0.2 or 0.6
+            QCard.BorderSizePixel = 0
+            QCard.Parent = PlaylistPage
+            Instance.new("UICorner", QCard).CornerRadius = UDim.new(0, 6)
+
+            local Title = Instance.new("TextLabel")
+            Title.Size = UDim2.new(1, -80, 1, 0)
+            Title.Position = UDim2.new(0, 15, 0, 0)
+            Title.BackgroundTransparency = 1
+            Title.Text = tostring(i) .. ". " .. song.Title
+            Title.TextColor3 = isPlaying and Colors.Black or Colors.White
+            Title.Font = isPlaying and Enum.Font.GothamBold or Enum.Font.GothamSemibold
+            Title.TextSize = 13
+            Title.TextXAlignment = Enum.TextXAlignment.Left
+            Title.Parent = QCard
+
+            -- Delete Button
+            local DelBtn = Instance.new("TextButton")
+            DelBtn.Size = UDim2.new(0, 30, 0, 30)
+            DelBtn.Position = UDim2.new(1, -40, 0.5, -15)
+            DelBtn.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+            DelBtn.BackgroundTransparency = 0.5
+            DelBtn.Text = "×"
+            DelBtn.TextColor3 = Colors.White
+            DelBtn.Font = Enum.Font.GothamBold
+            DelBtn.TextSize = 20
+            DelBtn.Parent = QCard
+            Instance.new("UICorner", DelBtn).CornerRadius = UDim.new(0, 6)
+
+            DelBtn.MouseButton1Click:Connect(function()
+                table.remove(_G.Axomusc_Queue, i)
+                if i < _G.Axomusc_CurrentIndex then
+                    _G.Axomusc_CurrentIndex = _G.Axomusc_CurrentIndex - 1
+                end
+                _G.Axomusc_RefreshPlaylistUI()
+            end)
+        end
+    end
+    _G.Axomusc_RefreshPlaylistUI()
+
+
+    -- ==============================================================================
+    -- [5] RESPONSIVE SLIDING QUEUE PANEL (DI MUSIC PAGE - ANTI TABRAKAN)
+    -- ==============================================================================
+    local MasterMusicContainer = _G.Page_Music.Page:FindFirstChild("Music_Master_Container")
+    local VisualizerWrapper = MasterMusicContainer:FindFirstChild("Visualizer_Wrapper")
+    
+    if MasterMusicContainer and VisualizerWrapper then
+        
+        -- Panel Sliding di Kanan
+        local SlidingPanel = Instance.new("Frame")
+        SlidingPanel.Name = "Sliding_Queue_Panel"
+        SlidingPanel.Size = UDim2.new(0.4, 0, 0.8, -20)
+        SlidingPanel.Position = UDim2.new(1, 20, 0.1, 0) -- Hidden di kanan
+        SlidingPanel.BackgroundColor3 = Colors.Black
+        SlidingPanel.BackgroundTransparency = 0.3
+        SlidingPanel.BorderSizePixel = 0
+        SlidingPanel.ZIndex = 5
+        SlidingPanel.Parent = MasterMusicContainer
+        
+        Instance.new("UICorner", SlidingPanel).CornerRadius = UDim.new(0, 12)
+        local Stroke = Instance.new("UIStroke", SlidingPanel)
+        Stroke.Color = Colors.ToscaGreen
+        Stroke.Transparency = 0.5
+
+        -- Header Sliding Panel
+        local PHeader = Instance.new("TextLabel")
+        PHeader.Size = UDim2.new(1, 0, 0, 35)
+        PHeader.BackgroundTransparency = 1
+        PHeader.Text = "Up Next"
+        PHeader.TextColor3 = Colors.IceBlue
+        PHeader.Font = Enum.Font.GothamBold
+        PHeader.TextSize = 14
+        PHeader.Parent = SlidingPanel
+
+        -- Clone content dari Playlist UI (Sinkronisasi Visual)
+        local MiniQueueList = Instance.new("ScrollingFrame")
+        MiniQueueList.Size = UDim2.new(1, -10, 1, -45)
+        MiniQueueList.Position = UDim2.new(0, 5, 0, 40)
+        MiniQueueList.BackgroundTransparency = 1
+        MiniQueueList.ScrollBarThickness = 2
+        MiniQueueList.Parent = SlidingPanel
+        
+        local MiniLayout = Instance.new("UIListLayout")
+        MiniLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        MiniLayout.Padding = UDim.new(0, 5)
+        MiniLayout.Parent = MiniQueueList
+
+        -- Tombol Toggle Panel
+        local ToggleQueueBtn = Instance.new("TextButton")
+        ToggleQueueBtn.Size = UDim2.new(0, 40, 0, 40)
+        ToggleQueueBtn.Position = UDim2.new(1, -50, 0, 10)
+        ToggleQueueBtn.BackgroundColor3 = Colors.DarkBlue
+        ToggleQueueBtn.BackgroundTransparency = 0.2
+        ToggleQueueBtn.Text = "☰"
+        ToggleQueueBtn.TextColor3 = Colors.White
+        ToggleQueueBtn.Font = Enum.Font.GothamBold
+        ToggleQueueBtn.TextSize = 18
+        ToggleQueueBtn.ZIndex = 10
+        ToggleQueueBtn.Parent = MasterMusicContainer
+        Instance.new("UICorner", ToggleQueueBtn).CornerRadius = UDim.new(0, 8)
+        Instance.new("UIStroke", ToggleQueueBtn).Color = Colors.IceBlue
+        
+        local PanelOpen = false
+        ToggleQueueBtn.MouseButton1Click:Connect(function()
+            PanelOpen = not PanelOpen
+            if PanelOpen then
+                -- Animasi Anti-Tabrakan: Geser Visualizer ke Kiri, Panel masuk ke Kanan
+                CreateTween(VisualizerWrapper, 0.4, {Position = UDim2.new(0.3, 0, 0.5, 0)})
+                CreateTween(SlidingPanel, 0.4, {Position = UDim2.new(0.58, 0, 0.1, 0)})
+                ToggleQueueBtn.Text = "×"
+                ToggleQueueBtn.TextColor3 = Colors.ToscaGreen
+                
+                -- Update Mini Queue Content
+                for _, c in pairs(MiniQueueList:GetChildren()) do if c:IsA("TextLabel") then c:Destroy() end end
+                for i, song in ipairs(_G.Axomusc_Queue) do
+                    local isPlaying = (i == _G.Axomusc_CurrentIndex)
+                    local lbl = Instance.new("TextLabel")
+                    lbl.Size = UDim2.new(1, 0, 0, 25)
+                    lbl.BackgroundTransparency = 1
+                    lbl.Text = i .. ". " .. song.Title
+                    lbl.TextColor3 = isPlaying and Colors.ToscaGreen or Colors.White
+                    lbl.Font = isPlaying and Enum.Font.GothamBold or Enum.Font.Gotham
+                    lbl.TextSize = 12
+                    lbl.TextXAlignment = Enum.TextXAlignment.Left
+                    lbl.Parent = MiniQueueList
+                end
+                MiniQueueList.CanvasSize = UDim2.new(0, 0, 0, #_G.Axomusc_Queue * 30)
+            else
+                -- Kembalikan Visualizer ke Tengah
+                CreateTween(VisualizerWrapper, 0.4, {Position = UDim2.new(0.5, 0, 0.5, 0)})
+                CreateTween(SlidingPanel, 0.4, {Position = UDim2.new(1, 20, 0.1, 0)})
+                ToggleQueueBtn.Text = "☰"
+                ToggleQueueBtn.TextColor3 = Colors.White
+            end
+        end)
+    end
+
+
+    -- ==============================================================================
+    -- [6] SINKRONISASI ENGINE TAHAP 1 (AUTO-NEXT LOGIC)
+    -- ==============================================================================
+    _G.Axomusc_PlayNextFromPlaylist = function()
+        if #_G.Axomusc_Queue == 0 then return end
+        
+        -- Maju ke lagu berikutnya, jika habis kembali ke lagu pertama (Loop Queue)
+        _G.Axomusc_CurrentIndex = _G.Axomusc_CurrentIndex + 1
+        if _G.Axomusc_CurrentIndex > #_G.Axomusc_Queue then
+            _G.Axomusc_CurrentIndex = 1 
+        end
+        
+        local nextSong = _G.Axomusc_Queue[_G.Axomusc_CurrentIndex]
+        if nextSong and _G.Axomusc_PlaySong then
+            _G.Axomusc_PlaySong(nextSong.ID, nextSong.Title, nextSong.Artist)
+            
+            if _G.Axomusc_Notify then
+                _G.Axomusc_Notify("Auto-Next", "Memutar: " .. nextSong.Title, 2.5)
+            end
+            
+            _G.Axomusc_RefreshPlaylistUI()
+        end
+    end
+
+    -- Hook tombot NEXT / PREV dari Tahap 1 ke sistem Playlist ini
+    local ControlPanel = MasterMusicContainer:FindFirstChild("Control_Panel")
+    if ControlPanel then
+        local BtnNext = ControlPanel:FindFirstChild("Btn_Next")
+        local BtnPrev = ControlPanel:FindFirstChild("Btn_Prev")
+        
+        if BtnNext then
+            BtnNext.MouseButton1Click:Connect(function()
+                _G.Axomusc_PlayNextFromPlaylist()
+            end)
+        end
+        
+        if BtnPrev then
+            BtnPrev.MouseButton1Click:Connect(function()
+                if #_G.Axomusc_Queue == 0 then return end
+                _G.Axomusc_CurrentIndex = _G.Axomusc_CurrentIndex - 1
+                if _G.Axomusc_CurrentIndex < 1 then
+                    _G.Axomusc_CurrentIndex = #_G.Axomusc_Queue
+                end
+                
+                local prevSong = _G.Axomusc_Queue[_G.Axomusc_CurrentIndex]
+                if prevSong and _G.Axomusc_PlaySong then
+                    _G.Axomusc_PlaySong(prevSong.ID, prevSong.Title, prevSong.Artist)
+                    _G.Axomusc_RefreshPlaylistUI()
+                end
+            end)
+        end
+    end
+
+end)
+
+if not Tahap2_Success then 
+    warn("[Axomusc Premium] Tahap 2 Gagal Dimuat: " .. tostring(Tahap2_Error)) 
+else
+    print("[Axomusc Premium] Tahap 2 Berhasil Dimuat (Folder, Playlist & Auto-Next Aktif!)")
+end
