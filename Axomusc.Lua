@@ -1155,7 +1155,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==============================================================================
--- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 2 - PREMIUM PLAYLIST & QUEUE)
+-- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 2 - PREMIUM PLAYLIST & 3-DOTS MENU)
 -- ==============================================================================
 
 local PlaylistPage = Page_Playlist.Page
@@ -1170,29 +1170,34 @@ App.Playlists = {
 App.CurrentPlaylist = "Default"
 
 -- ================= HELPER: PREMIUM BUTTON STYLE =================
-local function SetElegantBtn(btn)
+local function SetElegantBtn(btn, hoverColor)
+    hoverColor = hoverColor or Config.Colors.ToscaGreen
     btn.BackgroundColor3 = Color3.fromRGB(35, 40, 50)
     btn.AutoButtonColor = true
     btn.MouseEnter:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Config.Colors.ToscaGreen, TextColor3 = Color3.fromRGB(0,0,0)}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.2), {
+            BackgroundColor3 = hoverColor, 
+            TextColor3 = (hoverColor == Config.Colors.ToscaGreen) and Color3.fromRGB(0,0,0) or Config.Colors.White
+        }):Play()
     end)
     btn.MouseLeave:Connect(function()
-        TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(35, 40, 50), TextColor3 = Config.Colors.White}):Play()
+        TweenService:Create(btn, TweenInfo.new(0.2), {
+            BackgroundColor3 = Color3.fromRGB(35, 40, 50), 
+            TextColor3 = Config.Colors.White
+        }):Play()
     end)
 end
 
 -- ================= SUB PART: SEARCH BAR =================
+-- (Bagian Search sama dengan sebelumnya, dilewati komentar agar rapi)
 local SearchContainer = Instance.new("Frame", PlaylistPage)
 SearchContainer.Size = UDim2.new(1, -20, 0, 45)
 SearchContainer.Position = UDim2.new(0, 10, 0, 10)
 SearchContainer.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
 SearchContainer.BackgroundTransparency = 0.3
 Instance.new("UICorner", SearchContainer).CornerRadius = UDim.new(0, 8)
-
-local BlurEffect = Instance.new("UIStroke", SearchContainer)
-BlurEffect.Color = Color3.fromRGB(255, 255, 255)
-BlurEffect.Transparency = 0.8
-BlurEffect.Thickness = 1
+Instance.new("UIStroke", SearchContainer).Color = Color3.fromRGB(255, 255, 255)
+Instance.new("UIStroke", SearchContainer).Transparency = 0.8
 
 local SearchInput = Instance.new("TextBox", SearchContainer)
 SearchInput.Size = UDim2.new(1, -55, 1, 0)
@@ -1201,7 +1206,6 @@ SearchInput.BackgroundTransparency = 1
 SearchInput.PlaceholderText = "Masukkan ID Audio Lagu..."
 SearchInput.Text = ""
 SearchInput.TextColor3 = Color3.fromRGB(220, 220, 220)
-SearchInput.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
 SearchInput.Font = Enum.Font.GothamMedium
 SearchInput.TextSize = 14
 SearchInput.TextXAlignment = Enum.TextXAlignment.Left
@@ -1213,7 +1217,6 @@ SearchBtn.BackgroundColor3 = Config.Colors.ToscaGreen
 SearchBtn.Text = "🔍"
 SearchBtn.TextColor3 = Config.Colors.Black
 SearchBtn.Font = Enum.Font.GothamBold
-SearchBtn.TextSize = 18
 Instance.new("UICorner", SearchBtn).CornerRadius = UDim.new(0, 8)
 
 -- ================= SUB PART: SEARCH RESULT CONTAINER =================
@@ -1221,62 +1224,100 @@ local ResultContainer = Instance.new("Frame", PlaylistPage)
 ResultContainer.Size = UDim2.new(1, -20, 0, 60)
 ResultContainer.Position = UDim2.new(0, 10, 0, 65)
 ResultContainer.BackgroundColor3 = Color3.fromRGB(25, 30, 40)
-ResultContainer.BackgroundTransparency = 0.1
-ResultContainer.BorderSizePixel = 0
 ResultContainer.Visible = false
 Instance.new("UICorner", ResultContainer).CornerRadius = UDim.new(0, 8)
-
 local ResStroke = Instance.new("UIStroke", ResultContainer)
 ResStroke.Color = Config.Colors.ToscaGreen
 ResStroke.Transparency = 0.5
 
 local ResTitle = Instance.new("TextLabel", ResultContainer)
-ResTitle.Size = UDim2.new(1, -130, 0, 25)
+ResTitle.Size = UDim2.new(1, -50, 0, 25)
 ResTitle.Position = UDim2.new(0, 10, 0, 5)
 ResTitle.BackgroundTransparency = 1
-ResTitle.Text = "Title"
 ResTitle.TextColor3 = Config.Colors.White
 ResTitle.Font = Enum.Font.GothamBold
 ResTitle.TextSize = 14
 ResTitle.TextXAlignment = Enum.TextXAlignment.Left
-ResTitle.TextTruncate = Enum.TextTruncate.AtEnd
 
-local ResArtist = Instance.new("TextLabel", ResultContainer)
-ResArtist.Size = UDim2.new(1, -130, 0, 20)
-ResArtist.Position = UDim2.new(0, 10, 0, 30)
-ResArtist.BackgroundTransparency = 1
-ResArtist.Text = "Artist"
-ResArtist.TextColor3 = Config.Colors.ToscaGreen
-ResArtist.Font = Enum.Font.Gotham
-ResArtist.TextSize = 12
-ResArtist.TextXAlignment = Enum.TextXAlignment.Left
+local BtnSaveSearch = Instance.new("TextButton", ResultContainer)
+BtnSaveSearch.Size = UDim2.new(0, 30, 0, 30)
+BtnSaveSearch.Position = UDim2.new(1, -40, 0.5, -15)
+BtnSaveSearch.Text = "💾"
+BtnSaveSearch.TextColor3 = Config.Colors.White
+Instance.new("UICorner", BtnSaveSearch).CornerRadius = UDim.new(0, 6)
+SetElegantBtn(BtnSaveSearch)
 
-local BtnAddQueue = Instance.new("TextButton", ResultContainer)
-BtnAddQueue.Size = UDim2.new(0, 30, 0, 30)
-BtnAddQueue.Position = UDim2.new(1, -115, 0.5, -15)
-BtnAddQueue.Text = "➕"
-BtnAddQueue.TextColor3 = Config.Colors.White
-Instance.new("UICorner", BtnAddQueue).CornerRadius = UDim.new(0, 6)
+-- ================= SUB PART: CONTEXT MENU (3-DOTS OVERLAY) =================
+local ContextOverlay = Instance.new("TextButton", PlaylistPage)
+ContextOverlay.Size = UDim2.new(1, 0, 1, 0)
+ContextOverlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+ContextOverlay.BackgroundTransparency = 1
+ContextOverlay.Text = ""
+ContextOverlay.Visible = false
+ContextOverlay.ZIndex = 10 -- Memastikan selalu di atas
 
-local BtnSave = Instance.new("TextButton", ResultContainer)
-BtnSave.Size = UDim2.new(0, 30, 0, 30)
-BtnSave.Position = UDim2.new(1, -75, 0.5, -15)
-BtnSave.Text = "💾"
-BtnSave.TextColor3 = Config.Colors.White
-Instance.new("UICorner", BtnSave).CornerRadius = UDim.new(0, 6)
+local ContextMenu = Instance.new("Frame", ContextOverlay)
+ContextMenu.Size = UDim2.new(1, -40, 0, 210)
+ContextMenu.Position = UDim2.new(0, 20, 1, 50) -- Awalnya di bawah layar (tersembunyi)
+ContextMenu.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
+ContextMenu.ZIndex = 11
+Instance.new("UICorner", ContextMenu).CornerRadius = UDim.new(0, 12)
+Instance.new("UIStroke", ContextMenu).Color = Config.Colors.ToscaGreen
 
-local BtnAddFolder = Instance.new("TextButton", ResultContainer)
-BtnAddFolder.Size = UDim2.new(0, 30, 0, 30)
-BtnAddFolder.Position = UDim2.new(1, -35, 0.5, -15)
-BtnAddFolder.Text = "📁"
-BtnAddFolder.TextColor3 = Config.Colors.White
-Instance.new("UICorner", BtnAddFolder).CornerRadius = UDim.new(0, 6)
+local CtxTitle = Instance.new("TextLabel", ContextMenu)
+CtxTitle.Size = UDim2.new(1, -20, 0, 30)
+CtxTitle.Position = UDim2.new(0, 10, 0, 10)
+CtxTitle.BackgroundTransparency = 1
+CtxTitle.TextColor3 = Config.Colors.ToscaGreen
+CtxTitle.Font = Enum.Font.GothamBold
+CtxTitle.TextSize = 14
+CtxTitle.Text = "Options"
+CtxTitle.ZIndex = 11
 
-SetElegantBtn(BtnAddQueue)
-SetElegantBtn(BtnSave)
-SetElegantBtn(BtnAddFolder)
+-- Membuat tombol untuk Context Menu
+local function CreateCtxBtn(text, yPos, colorHover)
+    local btn = Instance.new("TextButton", ContextMenu)
+    btn.Size = UDim2.new(1, -20, 0, 35)
+    btn.Position = UDim2.new(0, 10, 0, yPos)
+    btn.Text = text
+    btn.Font = Enum.Font.GothamMedium
+    btn.TextSize = 13
+    btn.ZIndex = 11
+    Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 6)
+    SetElegantBtn(btn, colorHover)
+    return btn
+end
 
--- ================= SUB PART: PLAYLIST SELECTION & QUEUE MANAGEMENT =================
+local CtxBtnPlay = CreateCtxBtn("▶ Putar Sekarang", 45)
+local CtxBtnPlayNext = CreateCtxBtn("⏭ Putar Selanjutnya", 85)
+local CtxBtnFolder = CreateCtxBtn("📁 Tambah ke Folder", 125)
+local CtxBtnDelete = CreateCtxBtn("🗑 Hapus dari Playlist", 165, Color3.fromRGB(220, 50, 50)) -- Merah saat hover
+
+local SelectedTrackData = nil
+local SelectedTrackIndex = nil
+
+-- Fungsi Buka/Tutup Context Menu dengan Animasi
+local function ToggleContextMenu(show, track, index)
+    if show then
+        SelectedTrackData = track
+        SelectedTrackIndex = index
+        CtxTitle.Text = track.Title
+        ContextOverlay.Visible = true
+        TweenService:Create(ContextOverlay, TweenInfo.new(0.3), {BackgroundTransparency = 0.5}):Play()
+        TweenService:Create(ContextMenu, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {Position = UDim2.new(0, 20, 1, -230)}):Play()
+    else
+        TweenService:Create(ContextOverlay, TweenInfo.new(0.2), {BackgroundTransparency = 1}):Play()
+        local closeAnim = TweenService:Create(ContextMenu, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0, 20, 1, 50)})
+        closeAnim:Play()
+        closeAnim.Completed:Connect(function()
+            if not SelectedTrackData then ContextOverlay.Visible = false end
+        end)
+        SelectedTrackData = nil
+    end
+end
+ContextOverlay.MouseButton1Click:Connect(function() ToggleContextMenu(false) end)
+
+-- ================= SUB PART: PLAYLIST UI & LIST =================
 local PlaylistDropdownBtn = Instance.new("TextButton", PlaylistPage)
 PlaylistDropdownBtn.Size = UDim2.new(1, -20, 0, 35)
 PlaylistDropdownBtn.Position = UDim2.new(0, 10, 0, 135)
@@ -1303,80 +1344,54 @@ local CurrentSearchedTrack = nil
 
 SearchBtn.MouseButton1Click:Connect(function()
     local query = SearchInput.Text
-    if query == "" then return App.Notify("Error", "Masukkan ID Lagu!", 3) end
-    
+    if query == "" then return App.Notify("Error", "Masukkan ID!", 3) end
     local id = tonumber(query)
     if id then
-        SearchBtn.Text = "..."
-        local success, info = pcall(function()
-            return MarketplaceService:GetProductInfo(id, Enum.InfoType.Asset)
-        end)
-        SearchBtn.Text = "🔍"
-        
+        local success, info = pcall(function() return MarketplaceService:GetProductInfo(id, Enum.InfoType.Asset) end)
         if success and info and info.AssetTypeId == 3 then
-            CurrentSearchedTrack = {
-                ID = id,
-                Title = info.Name,
-                Artist = info.Creator.Name or "Unknown"
-            }
+            CurrentSearchedTrack = {ID = id, Title = info.Name, Artist = info.Creator.Name or "Unknown"}
             ResTitle.Text = CurrentSearchedTrack.Title
-            ResArtist.Text = CurrentSearchedTrack.Artist
             ResultContainer.Visible = true
-            App.Notify("Ditemukan", "Lagu berhasil ditemukan!", 2)
+            App.Notify("Ditemukan", "Lagu ditemukan!", 2)
         else
-            App.Notify("Gagal", "ID Audio tidak valid/tidak ditemukan", 3)
+            App.Notify("Gagal", "ID Audio tidak valid", 3)
         end
-    else
-        App.Notify("Pencarian Nama", "Gunakan ID Audio.", 3)
     end
 end)
 
-BtnAddQueue.MouseButton1Click:Connect(function()
-    if CurrentSearchedTrack then
-        table.insert(App.MusicQueue, CurrentSearchedTrack)
-        if App.UpdateQueueUI then App.UpdateQueueUI() end -- Connect ke Tahap 1
-        App.Notify("Queue", CurrentSearchedTrack.Title .. " ditambahkan ke antrean!", 2)
-    end
-end)
-
-BtnSave.MouseButton1Click:Connect(function()
+BtnSaveSearch.MouseButton1Click:Connect(function()
     if CurrentSearchedTrack then
         table.insert(App.Playlists[App.CurrentPlaylist], CurrentSearchedTrack)
         App.RefreshPlaylistUI()
-        App.Notify("Tersimpan", CurrentSearchedTrack.Title .. " disimpan permanen di " .. App.CurrentPlaylist, 2)
-    end
-end)
-
-BtnAddFolder.MouseButton1Click:Connect(function()
-    if CurrentSearchedTrack then
-        App.PendingFolderTrack = CurrentSearchedTrack
-        App.Notify("Folder", "Buka menu Folder (Tahap 3) untuk menyimpan!", 3)
+        App.Notify("Tersimpan", "Tersimpan di " .. App.CurrentPlaylist, 2)
     end
 end)
 
 function App.RefreshPlaylistUI()
     for _, child in ipairs(SavedScroll:GetChildren()) do
-        if child:IsA("Frame") then child:Destroy() end
+        if child:IsA("Frame") or child:IsA("TextButton") then child:Destroy() end
     end
     
     local currentList = App.Playlists[App.CurrentPlaylist] or {}
     for i, track in ipairs(currentList) do
-        local item = Instance.new("Frame", SavedScroll)
+        -- Base Button (Bisa diklik untuk langsung play jika mau, atau biarkan statis)
+        local item = Instance.new("TextButton", SavedScroll)
         item.Size = UDim2.new(1, -10, 0, 45)
         item.BackgroundColor3 = Color3.fromRGB(20, 25, 35)
         item.BackgroundTransparency = 0.2
-        item.BorderSizePixel = 0
+        item.Text = ""
+        item.AutoButtonColor = false
         Instance.new("UICorner", item).CornerRadius = UDim.new(0, 8)
         
-        -- Efek Gradien Premium
-        local gradient = Instance.new("UIGradient", item)
-        gradient.Rotation = 90
-        gradient.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 35, 45)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 25, 35))
-        })
+        -- Hover Effect untuk List Item
+        item.MouseEnter:Connect(function()
+            TweenService:Create(item, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(30, 35, 45)}):Play()
+        end)
+        item.MouseLeave:Connect(function()
+            TweenService:Create(item, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(20, 25, 35)}):Play()
+        end)
         
-        -- Garis Aksentuasi Brand Axolion
+        -- Aksen Brand
         local accent = Instance.new("Frame", item)
         accent.Size = UDim2.new(0, 4, 1, 0)
         accent.BackgroundColor3 = Config.Colors.ToscaGreen
@@ -1384,7 +1399,7 @@ function App.RefreshPlaylistUI()
         Instance.new("UICorner", accent).CornerRadius = UDim.new(1, 0)
         
         local lblTitle = Instance.new("TextLabel", item)
-        lblTitle.Size = UDim2.new(1, -100, 0, 20)
+        lblTitle.Size = UDim2.new(1, -50, 0, 20)
         lblTitle.Position = UDim2.new(0, 15, 0, 5)
         lblTitle.BackgroundTransparency = 1
         lblTitle.Text = track.Title
@@ -1395,7 +1410,7 @@ function App.RefreshPlaylistUI()
         lblTitle.TextTruncate = Enum.TextTruncate.AtEnd
         
         local lblArtist = Instance.new("TextLabel", item)
-        lblArtist.Size = UDim2.new(1, -100, 0, 15)
+        lblArtist.Size = UDim2.new(1, -50, 0, 15)
         lblArtist.Position = UDim2.new(0, 15, 0, 25)
         lblArtist.BackgroundTransparency = 1
         lblArtist.Text = track.Artist
@@ -1404,48 +1419,63 @@ function App.RefreshPlaylistUI()
         lblArtist.TextSize = 11
         lblArtist.TextXAlignment = Enum.TextXAlignment.Left
         
-        local btnPlayNow = Instance.new("TextButton", item)
-        btnPlayNow.Size = UDim2.new(0, 30, 0, 30)
-        btnPlayNow.Position = UDim2.new(1, -80, 0.5, -15)
-        btnPlayNow.Text = "▶"
-        btnPlayNow.TextColor3 = Config.Colors.White
-        btnPlayNow.Font = Enum.Font.GothamBold
-        Instance.new("UICorner", btnPlayNow).CornerRadius = UDim.new(0, 6)
+        -- Tombol Titik Tiga (3-Dots Kebab Menu)
+        local btnOptions = Instance.new("TextButton", item)
+        btnOptions.Size = UDim2.new(0, 30, 0, 30)
+        btnOptions.Position = UDim2.new(1, -35, 0.5, -15)
+        btnOptions.BackgroundTransparency = 1
+        btnOptions.Text = "⋮"
+        btnOptions.TextColor3 = Config.Colors.White
+        btnOptions.Font = Enum.Font.GothamBold
+        btnOptions.TextSize = 20
         
-        local btnQueueIt = Instance.new("TextButton", item)
-        btnQueueIt.Size = UDim2.new(0, 30, 0, 30)
-        btnQueueIt.Position = UDim2.new(1, -40, 0.5, -15)
-        btnQueueIt.Text = "➕"
-        btnQueueIt.TextColor3 = Config.Colors.White
-        btnQueueIt.Font = Enum.Font.GothamBold
-        Instance.new("UICorner", btnQueueIt).CornerRadius = UDim.new(0, 6)
-        
-        SetElegantBtn(btnPlayNow)
-        SetElegantBtn(btnQueueIt)
-        
-        btnPlayNow.MouseButton1Click:Connect(function()
-            App.MusicQueue = {track}
-            if App.UpdateQueueUI then App.UpdateQueueUI() end
-            if App.PlayTrack then App.PlayTrack(1) end
-        end)
-        
-        btnQueueIt.MouseButton1Click:Connect(function()
-            table.insert(App.MusicQueue, track)
-            if App.UpdateQueueUI then App.UpdateQueueUI() end
-            App.Notify("Queue", "Ditambahkan ke antrean", 2)
+        btnOptions.MouseButton1Click:Connect(function()
+            ToggleContextMenu(true, track, i)
         end)
     end
     SavedScroll.CanvasSize = UDim2.new(0, 0, 0, #currentList * 55)
 end
 
-local dropdownOpen = false
-PlaylistDropdownBtn.MouseButton1Click:Connect(function()
-    dropdownOpen = not dropdownOpen
-    if dropdownOpen then
-        App.CurrentPlaylist = "Favorites"
-    else
-        App.CurrentPlaylist = "Default"
+-- ================= CONTEXT MENU ACTIONS =================
+CtxBtnPlay.MouseButton1Click:Connect(function()
+    if SelectedTrackData then
+        App.MusicQueue = {SelectedTrackData}
+        if App.UpdateQueueUI then App.UpdateQueueUI() end
+        if App.PlayTrack then App.PlayTrack(1) end
+        ToggleContextMenu(false)
     end
+end)
+
+CtxBtnPlayNext.MouseButton1Click:Connect(function()
+    if SelectedTrackData then
+        -- Memasukkan lagu ke urutan selanjutnya di queue
+        table.insert(App.MusicQueue, 2, SelectedTrackData) 
+        if App.UpdateQueueUI then App.UpdateQueueUI() end
+        App.Notify("Queue", "Akan diputar selanjutnya!", 2)
+        ToggleContextMenu(false)
+    end
+end)
+
+CtxBtnFolder.MouseButton1Click:Connect(function()
+    if SelectedTrackData then
+        App.PendingFolderTrack = SelectedTrackData
+        App.Notify("Folder", "Buka menu Folder untuk menyimpan lagu ini.", 3)
+        ToggleContextMenu(false)
+    end
+end)
+
+CtxBtnDelete.MouseButton1Click:Connect(function()
+    if SelectedTrackIndex then
+        table.remove(App.Playlists[App.CurrentPlaylist], SelectedTrackIndex)
+        App.RefreshPlaylistUI()
+        App.Notify("Dihapus", "Lagu dihapus dari playlist.", 2)
+        ToggleContextMenu(false)
+    end
+end)
+
+-- Switch Playlist Dropdown
+PlaylistDropdownBtn.MouseButton1Click:Connect(function()
+    App.CurrentPlaylist = (App.CurrentPlaylist == "Default") and "Favorites" or "Default"
     PlaylistDropdownBtn.Text = "📂 Playlist: " .. App.CurrentPlaylist .. " ▼"
     App.RefreshPlaylistUI()
 end)
