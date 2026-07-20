@@ -663,6 +663,105 @@ H_Line2.BackgroundColor3 = Config.Colors.ToscaGreen
 H_Line3.BackgroundColor3 = Config.Colors.ToscaGreen
 
 -- ==============================================================================
+-- [ MODUL BAGIAN 3: MUSIC PLAYER ENGINE (INTEGRATED) ]
+-- Gunakan ini untuk mengisi halaman Music Panel yang sudah dibuat di Bagian 2
+-- ==============================================================================
+
+local function InitMusicPlayer()
+    local TargetPage = Page_Music.Page -- Mengakses halaman dari variabel yang sudah ada
+    
+    -- Kita buat container tunggal agar UIListLayout milik Page tidak merusak konten kita
+    local PlayerContainer = Instance.new("Frame", TargetPage)
+    PlayerContainer.Name = "PlayerContainer"
+    PlayerContainer.Size = UDim2.new(1, 0, 1, 0) -- Mengisi penuh page
+    PlayerContainer.BackgroundTransparency = 1
+    PlayerContainer.LayoutOrder = 1 -- Agar berada di urutan atas
+    
+    -- Define Colors lokal untuk modul ini
+    local Colors = Config.Colors
+    
+    -- 1. PREMIUM BADGE & TITLE
+    local PremiumBadge = Instance.new("Frame", PlayerContainer)
+    PremiumBadge.Size = UDim2.new(0, 80, 0, 25)
+    PremiumBadge.Position = UDim2.new(0, 10, 0, 10)
+    PremiumBadge.BackgroundColor3 = Color3.fromRGB(255, 170, 0)
+    PremiumBadge.BackgroundTransparency = 0.8
+    Instance.new("UICorner", PremiumBadge).CornerRadius = UDim.new(0, 6)
+    
+    local PText = Instance.new("TextLabel", PremiumBadge)
+    PText.Size = UDim2.new(1, 0, 1, 0)
+    PText.Text = "👑 PREMIUM"
+    PText.TextColor3 = Color3.fromRGB(255, 215, 0)
+    PText.Font = Enum.Font.GothamBold
+    PText.TextSize = 10
+    PText.BackgroundTransparency = 1
+
+    -- 2. VINYL VISUALIZER (Center)
+    local AlbumWrapper = Instance.new("Frame", PlayerContainer)
+    AlbumWrapper.Name = "CD_Wrapper"
+    AlbumWrapper.Size = UDim2.new(0, 150, 0, 150)
+    AlbumWrapper.Position = UDim2.new(0.5, 0, 0, 100)
+    AlbumWrapper.AnchorPoint = Vector2.new(0.5, 0.5)
+    AlbumWrapper.BackgroundTransparency = 1
+    
+    local AlbumCD = Instance.new("ImageLabel", AlbumWrapper)
+    AlbumCD.Size = UDim2.new(1, 0, 1, 0)
+    AlbumCD.Image = Config.Thumbnail
+    AlbumCD.ScaleType = Enum.ScaleType.Crop
+    Instance.new("UICorner", AlbumCD).CornerRadius = UDim.new(1, 0)
+    
+    -- 3. PROGRESS BAR & INFO
+    local SongTitle = Instance.new("TextLabel", PlayerContainer)
+    SongTitle.Size = UDim2.new(0.9, 0, 0, 30)
+    SongTitle.Position = UDim2.new(0.5, 0, 0, 200)
+    SongTitle.AnchorPoint = Vector2.new(0.5, 0)
+    SongTitle.Text = "Axolion Theme"
+    SongTitle.TextColor3 = Colors.White
+    SongTitle.Font = Enum.Font.GothamBold
+    SongTitle.TextSize = 16
+    SongTitle.BackgroundTransparency = 1
+    
+    -- 4. CONTROL PANEL (Horisontal)
+    local ControlPanel = Instance.new("Frame", PlayerContainer)
+    ControlPanel.Size = UDim2.new(0.9, 0, 0, 60)
+    ControlPanel.Position = UDim2.new(0.5, 0, 1, -80)
+    ControlPanel.AnchorPoint = Vector2.new(0.5, 0)
+    ControlPanel.BackgroundColor3 = Colors.DarkBlue
+    ControlPanel.BackgroundTransparency = 0.5
+    Instance.new("UICorner", ControlPanel).CornerRadius = UDim.new(0, 15)
+    
+    local ControlLayout = Instance.new("UIListLayout", ControlPanel)
+    ControlLayout.FillDirection = Enum.FillDirection.Horizontal
+    ControlLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
+    ControlLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+    ControlLayout.Padding = UDim.new(0, 20)
+
+    -- Fungsi tombol helper
+    local function CreateBtn(text, size)
+        local b = Instance.new("TextButton", ControlPanel)
+        b.Size = UDim2.new(0, size, 0, size)
+        b.BackgroundTransparency = 1
+        b.Text = text
+        b.TextColor3 = Colors.White
+        b.TextSize = size * 0.6
+        return b
+    end
+
+    CreateBtn("⏮", 35)
+    local PlayBtn = CreateBtn("▶", 45)
+    CreateBtn("⏭", 35)
+    CreateBtn("🔊", 35)
+    
+    -- Feedback Visual Tombol Play
+    PlayBtn.MouseButton1Click:Connect(function()
+        PlayBtn.Text = (PlayBtn.Text == "▶") and "⏸" or "▶"
+    end)
+end
+
+-- Eksekusi Modul
+InitMusicPlayer()
+
+-- ==============================================================================
 -- BAGIAN 3: KONTEN MENU EKSKLUSIF (TAHAP 2 - FIX TOTAL PREMIUM PLAYLIST)
 -- ==============================================================================
 
